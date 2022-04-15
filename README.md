@@ -1,2 +1,3 @@
-# pgfplots_cg
-PGFPlots code generator
+# PGFPlots_cg 
+
+A Rust library that generates PGFPlots code to `\input` into LaTeX documents.
