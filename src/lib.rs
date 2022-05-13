@@ -22,7 +22,7 @@ pub enum PictureKey {
 impl fmt::Display for PictureKey {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            PictureKey::Custom(key) => write!(f, "{}", key),
+            PictureKey::Custom(key) => write!(f, "{key}"),
         }
     }
 }
@@ -38,8 +38,8 @@ impl fmt::Display for PictureKey {
 /// ```
 #[derive(Clone, Debug)]
 pub struct Picture {
-    axes: Vec<Axis>,
     keys: Vec<PictureKey>,
+    axes: Vec<Axis>,
 }
 
 impl fmt::Display for Picture {
@@ -50,7 +50,7 @@ impl fmt::Display for Picture {
         if !self.keys.is_empty() {
             write!(f, "[\n")?;
             for key in self.keys.iter() {
-                write!(f, "\t{},\n", key)?;
+                write!(f, "\t{key},\n")?;
             }
             write!(f, "]")?;
         }
@@ -58,7 +58,7 @@ impl fmt::Display for Picture {
 
         for axis in self.axes.iter() {
             // Need to implement Display for Axis
-            todo!();
+            write!(f, "\t{axis}\n")?;
         }
 
         write!(f, "\\end{{tikzpicture}}")?;
