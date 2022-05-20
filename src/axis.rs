@@ -1,9 +1,13 @@
+use crate::axis::plot::Plot2D;
 use std::fmt;
+
+/// Plot inside an [`Axis`] environment.
+pub mod plot;
 
 /// PGFPlots options passed to the [`Axis`] environment.
 ///
 /// The most commonly used key-value pairs are variants of the [`AxisKey`] enum.
-/// The [`AxisKey::Custom`] variant is provided to add unimplemented keys and 
+/// The [`AxisKey::Custom`] variant is provided to add unimplemented keys and
 /// will be written verbatim in the options of the [`Axis`] environment.
 #[derive(Clone, Debug)]
 pub enum AxisKey {
@@ -28,7 +32,7 @@ impl fmt::Display for AxisKey {
 
 /// Axis environment inside a [`Picture`].
 ///
-/// Adding an [`Axis`] to a [`Picture`] environment is equivalent to the PGFPlots 
+/// Adding an [`Axis`] to a [`Picture`] environment is equivalent to the PGFPlots
 /// axis environment:
 ///
 /// ```text
@@ -39,12 +43,13 @@ impl fmt::Display for AxisKey {
 #[derive(Clone, Debug)]
 pub struct Axis {
     keys: Vec<AxisKey>,
+    plots_2d: Vec<Plot2D>,
 }
 
 impl fmt::Display for Axis {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "\\begin{{axis}}")?;
-        // If there are keys, print one per line. It makes it easier for a 
+        // If there are keys, print one per line. It makes it easier for a
         // human to find individual keys later.
         if !self.keys.is_empty() {
             write!(f, "[\n")?;
@@ -55,8 +60,9 @@ impl fmt::Display for Axis {
         }
         write!(f, "\n")?;
 
-        // Need to implement Display for each addplot
-        todo!();
+        for plot_2d in self.plots_2d.iter() {
+            write!(f, "\t{plot_2d}\n")?;
+        }
 
         write!(f, "\\end{{axis}}")?;
 
@@ -67,7 +73,7 @@ impl fmt::Display for Axis {
 /// Control the scaling of the *x* axis.
 #[derive(Clone, Copy, Debug)]
 pub enum XMode {
-    /// Logarithmic scaling i.e. apply the natural logarithm to each *x* 
+    /// Logarithmic scaling i.e. apply the natural logarithm to each *x*
     /// coordinate.
     Log,
     /// Linear scaling of the *x* coordinates.
@@ -85,7 +91,7 @@ impl fmt::Display for XMode {
 /// Control the scaling of the *y* axis.
 #[derive(Clone, Copy, Debug)]
 pub enum YMode {
-    /// Logarithmic scaling i.e. apply the natural logarithm to each *y* 
+    /// Logarithmic scaling i.e. apply the natural logarithm to each *y*
     /// coordinate.
     Log,
     /// Linear scaling of the *y* coordinates.
@@ -99,3 +105,6 @@ impl fmt::Display for YMode {
         }
     }
 }
+
+#[cfg(test)]
+mod tests;

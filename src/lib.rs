@@ -57,7 +57,6 @@ impl fmt::Display for Picture {
         write!(f, "\n")?;
 
         for axis in self.axes.iter() {
-            // Need to implement Display for Axis
             write!(f, "\t{axis}\n")?;
         }
 
