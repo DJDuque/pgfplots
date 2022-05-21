@@ -40,6 +40,19 @@ impl fmt::Display for Coordinate2D {
 
 impl From<(f64, f64)> for Coordinate2D {
     /// Conversion from an `(x,y)` tuple into a two-dimensional coordinate.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pgfplots::axis::plot::coordinate::Coordinate2D;
+    ///
+    /// let point: Coordinate2D = (1.0, -1.0).into();
+    ///
+    /// assert_eq!(point.x, 1.0);
+    /// assert_eq!(point.y, -1.0);
+    /// assert!(point.error_x.is_none());
+    /// assert!(point.error_y.is_none());
+    /// ```
     fn from(coordinate: (f64, f64)) -> Self {
         Coordinate2D {
             x: coordinate.0,
@@ -51,7 +64,21 @@ impl From<(f64, f64)> for Coordinate2D {
 }
 
 impl From<(f64, f64, Option<f64>, Option<f64>)> for Coordinate2D {
-    /// Conversion from an `(x,y,error_x,error_y)` tuple into a two-dimensional coordinate.
+    /// Conversion from an `(x,y,error_x,error_y)` tuple into a two-dimensional
+    /// coordinate.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pgfplots::axis::plot::coordinate::Coordinate2D;
+    ///
+    /// let point: Coordinate2D = (1.0, -1.0, None, Some(3.0)).into();
+    ///
+    /// assert_eq!(point.x, 1.0);
+    /// assert_eq!(point.y, -1.0);
+    /// assert!(point.error_x.is_none());
+    /// assert_eq!(point.error_y.unwrap(), 3.0);
+    /// ```
     fn from(coordinate: (f64, f64, Option<f64>, Option<f64>)) -> Self {
         Coordinate2D {
             x: coordinate.0,
