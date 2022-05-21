@@ -1,5 +1,5 @@
 [package]
-name = "pgfplots_cg"
+name = "pgfplots"
 version = "0.1.0"
 edition = "2021"
 
