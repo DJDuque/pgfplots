@@ -30,7 +30,7 @@ impl fmt::Display for Coordinate2D {
 
         if self.error_x.is_some() || self.error_y.is_some() {
             let error_x = self.error_x.unwrap_or(0.0);
-            let error_y = self.error_x.unwrap_or(0.0);
+            let error_y = self.error_y.unwrap_or(0.0);
             write!(f, "\t+- ({error_x},{error_y})")?;
         }
 
