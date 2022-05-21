@@ -13,6 +13,7 @@ pub mod axis;
 /// keys and will be written verbatim in the options of the [`Picture`]
 /// environment.
 #[derive(Clone, Debug)]
+#[non_exhaustive]
 pub enum PictureKey {
     /// Custom key-value pairs that have not been implemented. These will be
     /// appended verbatim to the options of the [`Picture`].

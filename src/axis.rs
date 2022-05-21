@@ -10,14 +10,15 @@ pub mod plot;
 /// The [`AxisKey::Custom`] variant is provided to add unimplemented keys and
 /// will be written verbatim in the options of the [`Axis`] environment.
 #[derive(Clone, Debug)]
+#[non_exhaustive]
 pub enum AxisKey {
     /// Custom key-value pairs that have not been implemented. These will be
     /// appended verbatim to the options of the [`Axis`].
     Custom(String),
     /// Control the scaling of the *x* axis.
-    XMode(XMode),
+    XMode(Scale),
     /// Control the scaling of the *y* axis.
-    YMode(YMode),
+    YMode(Scale),
 }
 
 impl fmt::Display for AxisKey {
@@ -70,38 +71,19 @@ impl fmt::Display for Axis {
     }
 }
 
-/// Control the scaling of the *x* axis.
+/// Control the scaling of an axis.
 #[derive(Clone, Copy, Debug)]
-pub enum XMode {
-    /// Logarithmic scaling i.e. apply the natural logarithm to each *x*
-    /// coordinate.
+pub enum Scale {
+    /// Logarithmic scaling i.e. apply the natural logarithm to each coordinate.
     Log,
-    /// Linear scaling of the *x* coordinates.
+    /// Linear scaling of the coordinates.
     Normal,
 }
-impl fmt::Display for XMode {
+impl fmt::Display for Scale {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            XMode::Log => write!(f, "log"),
-            XMode::Normal => write!(f, "normal"),
-        }
-    }
-}
-
-/// Control the scaling of the *y* axis.
-#[derive(Clone, Copy, Debug)]
-pub enum YMode {
-    /// Logarithmic scaling i.e. apply the natural logarithm to each *y*
-    /// coordinate.
-    Log,
-    /// Linear scaling of the *y* coordinates.
-    Normal,
-}
-impl fmt::Display for YMode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            YMode::Log => write!(f, "log"),
-            YMode::Normal => write!(f, "normal"),
+            Scale::Log => write!(f, "log"),
+            Scale::Normal => write!(f, "normal"),
         }
     }
 }
