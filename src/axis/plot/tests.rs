@@ -226,16 +226,19 @@ fn plot_2d_add_key() {
 #[test]
 fn plot_2d_to_string() {
     let mut plot = Plot2D::new();
-    assert_eq!(plot.to_string(), "\\addplot[] coordinates {\n};");
+    assert_eq!(plot.to_string(), "\t\\addplot[] coordinates {\n\t};");
 
     plot.coordinates.push((1.0, -1.0).into());
-    assert_eq!(plot.to_string(), "\\addplot[] coordinates {\n\t(1,-1)\n};");
+    assert_eq!(
+        plot.to_string(),
+        "\t\\addplot[] coordinates {\n\t\t(1,-1)\n\t};"
+    );
 
     plot.coordinates.clear();
     plot.add_key(PlotKey::Type2D(Type2D::SharpPlot));
     assert_eq!(
         plot.to_string(),
-        "\\addplot[\n\tsharp plot,\n] coordinates {\n};"
+        "\t\\addplot[\n\t\tsharp plot,\n\t] coordinates {\n\t};"
     );
 
     plot.add_key(PlotKey::XError(ErrorCharacter::Absolute));
@@ -245,6 +248,6 @@ fn plot_2d_to_string() {
     plot.coordinates.push((3.0, -3.0).into());
     assert_eq!(
         plot.to_string(),
-        "\\addplot[\n\tsharp plot,\n\terror bars/x explicit,\n\terror bars/x dir=both,\n] coordinates {\n\t(1,-1)\n\t(2,-2)\n\t(3,-3)\n};"
+        "\t\\addplot[\n\t\tsharp plot,\n\t\terror bars/x explicit,\n\t\terror bars/x dir=both,\n\t] coordinates {\n\t\t(1,-1)\n\t\t(2,-2)\n\t\t(3,-3)\n\t};"
     );
 }

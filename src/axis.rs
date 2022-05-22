@@ -1,6 +1,11 @@
 use crate::axis::plot::Plot2D;
 use std::fmt;
 
+// Only imported for documentation. If you notice that this is no longer the
+// case, please change it.
+#[allow(unused_imports)]
+use crate::Picture;
+
 /// Plot inside an [`Axis`] environment.
 pub mod plot;
 
@@ -33,18 +38,17 @@ impl fmt::Display for AxisKey {
 
 /// Axis environment inside a [`Picture`].
 ///
-/// Adding an [`Axis`] to a [`Picture`] environment is equivalent to the PGFPlots
-/// axis environment:
+/// An [`Axis`] is equivalent to the PGFPlots axis environment:
 ///
 /// ```text
 /// \begin{axis}[AxisKeys]
-///     % contents
+///     % plots
 /// \end{axis}
 /// ```
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Axis {
     keys: Vec<AxisKey>,
-    plots_2d: Vec<Plot2D>,
+    pub plots: Vec<Plot2D>,
 }
 
 impl fmt::Display for Axis {
@@ -53,21 +57,63 @@ impl fmt::Display for Axis {
         // If there are keys, print one per line. It makes it easier for a
         // human to find individual keys later.
         if !self.keys.is_empty() {
-            write!(f, "[\n")?;
+            writeln!(f, "[")?;
             for key in self.keys.iter() {
-                write!(f, "\t{key},\n")?;
+                writeln!(f, "\t{key},")?;
             }
             write!(f, "]")?;
         }
-        write!(f, "\n")?;
+        writeln!(f)?;
 
-        for plot_2d in self.plots_2d.iter() {
-            write!(f, "\t{plot_2d}\n")?;
+        for plot in self.plots.iter() {
+            writeln!(f, "{plot}")?;
         }
 
         write!(f, "\\end{{axis}}")?;
 
         Ok(())
+    }
+}
+
+impl Axis {
+    /// Creates a new, empty axis environment.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pgfplots::axis::Axis;
+    ///
+    /// let mut axis = Axis::new();
+    /// ```
+    pub fn new() -> Self {
+        Default::default()
+    }
+    /// Add a key to control the appearance of the axis. This will overwrite
+    /// any previous mutually exclusive key.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pgfplots::axis::{Axis, AxisKey, Scale::Log};
+    ///
+    /// let mut axis = Axis::new();
+    ///
+    /// axis.add_key(AxisKey::YMode(Log));
+    /// ```
+    pub fn add_key(&mut self, key: AxisKey) {
+        match key {
+            AxisKey::Custom(_) => (),
+            _ => {
+                if let Some(index) = self
+                    .keys
+                    .iter()
+                    .position(|k| std::mem::discriminant(k) == std::mem::discriminant(&key))
+                {
+                    self.keys.remove(index);
+                }
+            }
+        }
+        self.keys.push(key);
     }
 }
 

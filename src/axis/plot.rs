@@ -69,22 +69,23 @@ pub struct Plot2D {
 
 impl fmt::Display for Plot2D {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "\\addplot[")?;
+        write!(f, "\t\\addplot[")?;
         // If there are keys, print them one per line. It makes it easier for a
         // human to find individual keys later.
         if !self.keys.is_empty() {
             writeln!(f)?;
             for key in self.keys.iter() {
-                writeln!(f, "\t{key},")?;
+                writeln!(f, "\t\t{key},")?;
             }
+            write!(f, "\t")?;
         }
         writeln!(f, "] coordinates {{")?;
 
         for coordinate in self.coordinates.iter() {
-            writeln!(f, "\t{coordinate}")?;
+            writeln!(f, "\t\t{coordinate}")?;
         }
 
-        write!(f, "}};")?;
+        write!(f, "\t}};")?;
 
         Ok(())
     }
@@ -101,10 +102,7 @@ impl Plot2D {
     /// let mut plot = Plot2D::new();
     /// ```
     pub fn new() -> Self {
-        Plot2D {
-            keys: Vec::new(),
-            coordinates: Vec::new(),
-        }
+        Default::default()
     }
     /// Add a key to control the appearance of the plot. This will overwrite
     /// any previous mutually exclusive key.
