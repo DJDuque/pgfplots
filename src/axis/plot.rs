@@ -1,6 +1,11 @@
 use crate::axis::plot::coordinate::Coordinate2D;
 use std::fmt;
 
+// Only imported for documentation. If you notice that this is no longer the
+// case, please change it.
+#[allow(unused_imports)]
+use crate::axis::Axis;
+
 /// Coordinates inside a plot.
 pub mod coordinate;
 
@@ -15,6 +20,8 @@ pub enum PlotKey {
     /// Custom key-value pairs that have not been implemented. These will be
     /// appended verbatim to the options of the `\addplot[...]` command.
     Custom(String),
+    /// Control the type of two dimensional plots.
+    Type2D(Type2D),
     /// Control the character (absolute or relative) of the error bars of the
     /// *x* coordinates. Note that error bars won't be drawn unless
     /// [`PlotKey::XErrorDirection`] is also set.
@@ -37,6 +44,7 @@ impl fmt::Display for PlotKey {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             PlotKey::Custom(key) => write!(f, "{key}"),
+            PlotKey::Type2D(value) => write!(f, "{value}"),
             PlotKey::XError(value) => write!(f, "error bars/x {value}"),
             PlotKey::XErrorDirection(value) => write!(f, "error bars/x dir={value}"),
             PlotKey::YError(value) => write!(f, "error bars/y {value}"),
@@ -53,10 +61,10 @@ impl fmt::Display for PlotKey {
 /// \addplot[PlotKeys]
 ///     % coordinates;
 /// ```
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Plot2D {
     keys: Vec<PlotKey>,
-    coordinates: Vec<Coordinate2D>,
+    pub coordinates: Vec<Coordinate2D>,
 }
 
 impl fmt::Display for Plot2D {
@@ -65,20 +73,112 @@ impl fmt::Display for Plot2D {
         // If there are keys, print them one per line. It makes it easier for a
         // human to find individual keys later.
         if !self.keys.is_empty() {
-            write!(f, "\n")?;
+            writeln!(f)?;
             for key in self.keys.iter() {
-                write!(f, "\t{key},\n")?;
+                writeln!(f, "\t{key},")?;
             }
         }
-        write!(f, "] coordinates {{\n")?;
+        writeln!(f, "] coordinates {{")?;
 
         for coordinate in self.coordinates.iter() {
-            write!(f, "\t{coordinate}\n")?;
+            writeln!(f, "\t{coordinate}")?;
         }
 
         write!(f, "}};")?;
 
         Ok(())
+    }
+}
+
+impl Plot2D {
+    /// Creates a new, empty two-dimensional plot.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pgfplots::axis::plot::Plot2D;
+    ///
+    /// let mut plot = Plot2D::new();
+    /// ```
+    pub fn new() -> Self {
+        Plot2D {
+            keys: Vec::new(),
+            coordinates: Vec::new(),
+        }
+    }
+    /// Add a key to control the appearance of the plot. This will overwrite
+    /// any previous mutually exclusive key.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pgfplots::axis::plot::{Plot2D, PlotKey, Type2D::SharpPlot};
+    ///
+    /// let mut plot = Plot2D::new();
+    ///
+    /// plot.add_key(PlotKey::Type2D(SharpPlot));
+    /// ```
+    pub fn add_key(&mut self, key: PlotKey) {
+        match key {
+            PlotKey::Custom(_) => (),
+            _ => {
+                if let Some(index) = self
+                    .keys
+                    .iter()
+                    .position(|k| std::mem::discriminant(k) == std::mem::discriminant(&key))
+                {
+                    self.keys.remove(index);
+                }
+            }
+        }
+        self.keys.push(key);
+    }
+}
+
+/// Control the type of two dimensional plots.
+#[derive(Clone, Copy, Debug)]
+#[non_exhaustive]
+pub enum Type2D {
+    /// Coordinates are simply connected by straight lines.
+    SharpPlot,
+    /// Coordinates are connected with horizontal and vertical lines. Marks are
+    /// placed to the left of each horizontal line.
+    ConstLeft,
+    /// Coordinates are connected with horizontal and vertical lines. Marks are
+    /// placed to the right of each horizontal line.
+    ConstRight,
+    /// Coordinates are connected with horizontal and vertical lines. Marks are
+    /// placed to the middle of each horizontal line.
+    ConstMid,
+    /// Variant of [`Type2D::ConstLeft`] which does not draw vertical lines.
+    JumpLeft,
+    /// Variant of [`Type2D::ConstRight`] which does not draw vertical lines.
+    JumpRight,
+    /// Variant of [`Type2D::ConstMid`] which does not draw vertical lines.
+    JumpMid,
+    /// Similar to [`Type2D::XBar`] except that it draws a single horizontal
+    /// lines instead of rectangles.
+    XComb,
+    /// Similar to [`Type2D::YBar`] except that it draws a single vertical
+    /// lines instead of rectangles.
+    YComb,
+    /// Draw only markers.
+    OnlyMarks,
+}
+impl fmt::Display for Type2D {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Type2D::SharpPlot => write!(f, "sharp plot"),
+            Type2D::ConstLeft => write!(f, "const plot mark left"),
+            Type2D::ConstRight => write!(f, "const plot mark right"),
+            Type2D::ConstMid => write!(f, "const plot mark mid"),
+            Type2D::JumpLeft => write!(f, "jump mark left"),
+            Type2D::JumpRight => write!(f, "jump mark right"),
+            Type2D::JumpMid => write!(f, "jump mark mid"),
+            Type2D::XComb => write!(f, "xcomb"),
+            Type2D::YComb => write!(f, "ycomb"),
+            Type2D::OnlyMarks => write!(f, "only marks"),
+        }
     }
 }
 
