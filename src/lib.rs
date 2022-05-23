@@ -2,6 +2,7 @@
 
 use crate::axis::Axis;
 use std::fmt;
+use std::process::{Command, ExitStatus, Stdio};
 
 /// Axis environment inside a [`Picture`].
 pub mod axis;
@@ -99,6 +100,45 @@ impl Picture {
             // Axis::add_key and Plot2D::add_key
         }
         self.keys.push(key);
+    }
+    /// Executes `pdflatex` with the given `-jobname` as a child process,
+    /// waiting for it to finish and collecting its status.
+    ///
+    /// If successful, this produces a `jobname.pdf` file with the [`Picture`]
+    /// as a standalone PDF.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use pgfplots::Picture;
+    ///
+    /// let mut picture = Picture::new();
+    ///
+    /// let status = picture
+    ///     .pdflatex_standalone("figure")
+    ///     .expect("failed to execute pdflatex");
+    ///
+    /// if status.success() {
+    ///     // There is a `figure.pdf` file with our picture
+    ///     // There are also `figure.log` and `figure.aux` that we can safely remove
+    /// }
+    /// ```
+    pub fn pdflatex_standalone(&self, jobname: &str) -> std::io::Result<ExitStatus> {
+        let argument =
+            (String::from("\\documentclass{standalone}\\usepackage{pgfplots}\\begin{document}")
+                + &self.to_string()
+                + "\\end{document}")
+                .replace('\n', "")
+                .replace('\t', "");
+
+        Command::new("pdflatex")
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .arg("-interaction=batchmode")
+            .arg("-halt-on-error")
+            .arg(String::from("-jobname=") + jobname)
+            .arg(argument)
+            .status()
     }
 }
 
