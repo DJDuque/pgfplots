@@ -7,6 +7,51 @@ fn scale_to_string() {
     assert_eq!(Scale::Normal.to_string(), String::from("normal"));
 }
 
+// This test is here only to let us know if we added an enum variant
+// but we forgot to add unit tests for it
+//
+// If this fails, it is because you added a new variant.
+// Please do the following:
+// 1) Add a unit test for the new variant you added (see examples below).
+// 2) AFTER doing (1), add the new variant to the match.
+#[test]
+fn axis_keys_tested() {
+    let axis_key = AxisKey::Custom(String::from(""));
+    match axis_key {
+        AxisKey::Custom(_) => (),
+        AxisKey::XMode(_) => (),
+        AxisKey::YMode(_) => (),
+        AxisKey::Title(_) => (),
+        AxisKey::XLabel(_) => (),
+        AxisKey::YLabel(_) => (),
+    }
+    assert!(true);
+}
+
+#[test]
+fn axis_key_y_label_to_string() {
+    assert_eq!(
+        AxisKey::YLabel(String::from("Random Label")).to_string(),
+        "ylabel={Random Label}"
+    );
+}
+
+#[test]
+fn axis_key_x_label_to_string() {
+    assert_eq!(
+        AxisKey::XLabel(String::from("Random Label")).to_string(),
+        "xlabel={Random Label}"
+    );
+}
+
+#[test]
+fn axis_key_title_to_string() {
+    assert_eq!(
+        AxisKey::Title(String::from("Random Title")).to_string(),
+        "title={Random Title}"
+    );
+}
+
 #[test]
 fn axis_key_custom_to_string() {
     assert_eq!(

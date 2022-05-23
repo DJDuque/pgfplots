@@ -24,6 +24,12 @@ pub enum AxisKey {
     XMode(Scale),
     /// Control the scaling of the *y* axis.
     YMode(Scale),
+    /// Control the title of the axis environment.
+    Title(String),
+    /// Control the label of the *x* axis.
+    XLabel(String),
+    /// Control the label of the *y* axis.
+    YLabel(String),
 }
 
 impl fmt::Display for AxisKey {
@@ -32,6 +38,9 @@ impl fmt::Display for AxisKey {
             AxisKey::Custom(key) => write!(f, "{key}"),
             AxisKey::XMode(value) => write!(f, "xmode={value}"),
             AxisKey::YMode(value) => write!(f, "ymode={value}"),
+            AxisKey::Title(value) => write!(f, "title={{{value}}}"),
+            AxisKey::XLabel(value) => write!(f, "xlabel={{{value}}}"),
+            AxisKey::YLabel(value) => write!(f, "ylabel={{{value}}}"),
         }
     }
 }
