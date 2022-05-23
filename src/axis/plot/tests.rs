@@ -46,6 +46,27 @@ fn type_2d_to_string() {
     assert_eq!(Type2D::OnlyMarks.to_string(), String::from("only marks"));
 }
 
+// This test is here only to let us know if we added an enum variant
+// but we forgot to add unit tests for it
+//
+// If this fails, it is because you added a new variant.
+// Please do the following:
+// 1) Add a unit test for the new variant you added (see examples below).
+// 2) AFTER doing (1), add the new variant to the match.
+#[test]
+fn plot_keys_tested() {
+    let plot_key = PlotKey::Custom(String::from(""));
+    match plot_key {
+        PlotKey::Custom(_) => (),
+        PlotKey::Type2D(_) => (),
+        PlotKey::XError(_) => (),
+        PlotKey::XErrorDirection(_) => (),
+        PlotKey::YError(_) => (),
+        PlotKey::YErrorDirection(_) => (),
+    }
+    assert!(true);
+}
+
 #[test]
 fn plot_key_custom_to_string() {
     assert_eq!(

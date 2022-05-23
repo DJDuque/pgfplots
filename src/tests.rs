@@ -1,6 +1,22 @@
 use super::*;
 use crate::axis::plot::Plot2D;
 
+// This test is here only to let us know if we added an enum variant
+// but we forgot to add unit tests for it
+//
+// If this fails, it is because you added a new variant.
+// Please do the following:
+// 1) Add a unit test for the new variant you added (see examples below).
+// 2) AFTER doing (1), add the new variant to the match.
+#[test]
+fn picture_keys_tested() {
+    let picture_key = PictureKey::Custom(String::from(""));
+    match picture_key {
+        PictureKey::Custom(_) => (),
+    }
+    assert!(true);
+}
+
 #[test]
 fn picture_key_custom_to_string() {
     assert_eq!(
