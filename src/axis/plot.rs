@@ -61,6 +61,27 @@ impl fmt::Display for PlotKey {
 /// \addplot[PlotKeys]
 ///     % coordinates;
 /// ```
+///
+/// # Examples
+///
+/// ```no_run
+/// use pgfplots::axis::plot::Plot2D;
+///
+/// let mut plot = Plot2D::new();
+/// plot.coordinates = (-100..100)
+///     .into_iter()
+///     .map(|i| (f64::from(i), f64::from(i*i)).into())
+///     .collect();
+///
+/// let status = plot
+///     .pdflatex_standalone("figure")
+///     .expect("failed to run pdflatex");
+///
+/// if status.success() {
+///     // There is a `figure.pdf` in current working directory with our picture
+///     // There are also `figure.log` and `figure.aux` that we can safely remove
+/// }
+/// ```
 #[derive(Clone, Debug, Default)]
 pub struct Plot2D {
     keys: Vec<PlotKey>,
@@ -113,7 +134,6 @@ impl Plot2D {
     /// use pgfplots::axis::plot::{Plot2D, PlotKey, Type2D::SharpPlot};
     ///
     /// let mut plot = Plot2D::new();
-    ///
     /// plot.add_key(PlotKey::Type2D(SharpPlot));
     /// ```
     pub fn add_key(&mut self, key: PlotKey) {

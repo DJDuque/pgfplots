@@ -1,4 +1,48 @@
-//! A Rust library that generates PGFPlots code to `\input` into LaTeX documents.
+//! A Rust library to generate publication-quality figures.
+//!
+//! This crate is a PGFPlots code generator, and provides utilities to create,
+//! customize, and compile high-quality plots. Users need to have the `pdflatex`
+//! LaTeX compiler available in their system with the `pgfplots` package.
+//!
+//! The library's API is designed to feel natural for LaTeX and PGFPlots users,
+//! but no previous experience is required to start generating
+//! publication-quality plots in Rust.
+//!
+//! # Quick Start
+//!
+//! To get you started quickly, the easiest way to generate a plot is to use a
+//! [`Plot2D`]. Plotting a quadratic function is as simple as:
+//!
+//! ```no_run
+//! use pgfplots::axis::plot::Plot2D;
+//!
+//! let mut plot = Plot2D::new();
+//! plot.coordinates = (-100..100)
+//!     .into_iter()
+//!     .map(|i| (f64::from(i), f64::from(i*i)).into())
+//!     .collect();
+//!
+//! let status = plot
+//!     .pdflatex_standalone("figure")
+//!     .expect("failed to run pdflatex");
+//!
+//! if status.success() {
+//!     // There is a `figure.pdf` in current working directory with our picture
+//!     // There are also `figure.log` and `figure.aux` that we can safely remove
+//! }
+//! ```
+//!
+//! It is possible to show multiple plots in the same axis environment by
+//! creating an [`Axis`] and adding plots to it. An [`Axis`] and its individual
+//! [`Plot2D`]s are customized by [`AxisKey`]s and [`PlotKey`]s respectively.
+
+// Only imported for documentation. If you notice that this is no longer the
+// case, please change it.
+#[allow(unused_imports)]
+use crate::axis::{
+    plot::{Plot2D, PlotKey},
+    AxisKey,
+};
 
 use crate::axis::Axis;
 use std::fmt;
@@ -35,9 +79,12 @@ impl fmt::Display for PictureKey {
 ///
 /// ```text
 /// \begin{tikzpicture}[PictureKeys]
-///     % contents
+///     % axis environments
 /// \end{tikzpicture}
 /// ```
+///
+/// You will rarely interact with a [`Picture`]. It is only useful to generate
+/// complex layouts with multiple axis environments.
 #[derive(Clone, Debug, Default)]
 pub struct Picture {
     keys: Vec<PictureKey>,
@@ -90,7 +137,6 @@ impl Picture {
     /// use pgfplots::{Picture, PictureKey};
     ///
     /// let mut picture = Picture::new();
-    ///
     /// picture.add_key(PictureKey::Custom(String::from("baseline")));
     /// ```
     pub fn add_key(&mut self, key: PictureKey) {

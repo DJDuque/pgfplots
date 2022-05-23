@@ -54,6 +54,26 @@ impl fmt::Display for AxisKey {
 ///     % plots
 /// \end{axis}
 /// ```
+///
+/// # Examples
+///
+/// ```no_run
+/// use pgfplots::axis::Axis;
+///
+/// let mut axis = Axis::new();
+/// axis.set_title("Picture of $\\gamma$ rays");
+/// axis.set_x_label("$x$~[m]");
+/// axis.set_y_label("$y$~[m]");
+///
+/// let status = axis
+///     .pdflatex_standalone("figure")
+///     .expect("failed to run pdflatex");
+///
+/// if status.success() {
+///     // There is a `figure.pdf` in current working directory with our picture
+///     // There are also `figure.log` and `figure.aux` that we can safely remove
+/// }
+/// ```
 #[derive(Clone, Debug, Default)]
 pub struct Axis {
     keys: Vec<AxisKey>,
@@ -106,7 +126,6 @@ impl Axis {
     /// use pgfplots::axis::Axis;
     ///
     /// let mut axis = Axis::new();
-    ///
     /// axis.set_title("My plot: $y = x^2$");
     /// ```
     pub fn set_title(&mut self, title: &str) {
@@ -120,7 +139,6 @@ impl Axis {
     /// use pgfplots::axis::Axis;
     ///
     /// let mut axis = Axis::new();
-    ///
     /// axis.set_x_label("$x$~[m]");
     /// ```
     pub fn set_x_label(&mut self, label: &str) {
@@ -134,7 +152,6 @@ impl Axis {
     /// use pgfplots::axis::Axis;
     ///
     /// let mut axis = Axis::new();
-    ///
     /// axis.set_y_label("$y$~[m]");
     /// ```
     pub fn set_y_label(&mut self, label: &str) {
@@ -149,7 +166,6 @@ impl Axis {
     /// use pgfplots::axis::{Axis, AxisKey, Scale::Log};
     ///
     /// let mut axis = Axis::new();
-    ///
     /// axis.add_key(AxisKey::YMode(Log));
     /// ```
     pub fn add_key(&mut self, key: AxisKey) {
