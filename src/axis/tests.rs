@@ -92,6 +92,30 @@ fn axis_new() {
 }
 
 #[test]
+fn axis_set_title() {
+    let mut axis = Axis::new();
+    axis.set_title("Something");
+    assert_eq!(axis.keys.len(), 1);
+    assert!(matches!(axis.keys[0], AxisKey::Title(_)));
+}
+
+#[test]
+fn axis_set_x_label() {
+    let mut axis = Axis::new();
+    axis.set_x_label("Something");
+    assert_eq!(axis.keys.len(), 1);
+    assert!(matches!(axis.keys[0], AxisKey::XLabel(_)));
+}
+
+#[test]
+fn axis_set_y_label() {
+    let mut axis = Axis::new();
+    axis.set_y_label("Something");
+    assert_eq!(axis.keys.len(), 1);
+    assert!(matches!(axis.keys[0], AxisKey::YLabel(_)));
+}
+
+#[test]
 fn axis_add_key() {
     let mut axis = Axis::new();
     axis.add_key(AxisKey::YMode(Scale::Log));

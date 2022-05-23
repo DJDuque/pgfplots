@@ -97,6 +97,49 @@ impl Axis {
     pub fn new() -> Self {
         Default::default()
     }
+    /// Set the title of the axis environment. This can be valid LaTeX e.g.
+    /// inline math.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pgfplots::axis::Axis;
+    ///
+    /// let mut axis = Axis::new();
+    ///
+    /// axis.set_title("My plot: $y = x^2$");
+    /// ```
+    pub fn set_title(&mut self, title: &str) {
+        self.add_key(AxisKey::Title(String::from(title)));
+    }
+    /// Set the label of the *x* axis. This can be valid LaTeX e.g. inline math.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pgfplots::axis::Axis;
+    ///
+    /// let mut axis = Axis::new();
+    ///
+    /// axis.set_x_label("$x$~[m]");
+    /// ```
+    pub fn set_x_label(&mut self, label: &str) {
+        self.add_key(AxisKey::XLabel(String::from(label)));
+    }
+    /// Set the label of the *y* axis. This can be valid LaTeX e.g. inline math.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pgfplots::axis::Axis;
+    ///
+    /// let mut axis = Axis::new();
+    ///
+    /// axis.set_y_label("$y$~[m]");
+    /// ```
+    pub fn set_y_label(&mut self, label: &str) {
+        self.add_key(AxisKey::YLabel(String::from(label)));
+    }
     /// Add a key to control the appearance of the axis. This will overwrite
     /// any previous mutually exclusive key.
     ///
