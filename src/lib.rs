@@ -37,10 +37,10 @@ impl fmt::Display for PictureKey {
 ///     % contents
 /// \end{tikzpicture}
 /// ```
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Picture {
     keys: Vec<PictureKey>,
-    axes: Vec<Axis>,
+    pub axes: Vec<Axis>,
 }
 
 impl fmt::Display for Picture {
@@ -49,21 +49,56 @@ impl fmt::Display for Picture {
         // If there are keys, print one per line. It makes it easier for a
         // human later to find keys if they are divided by lines.
         if !self.keys.is_empty() {
-            write!(f, "[\n")?;
+            writeln!(f, "[")?;
             for key in self.keys.iter() {
-                write!(f, "\t{key},\n")?;
+                writeln!(f, "\t{key},")?;
             }
             write!(f, "]")?;
         }
-        write!(f, "\n")?;
+        writeln!(f)?;
 
         for axis in self.axes.iter() {
-            write!(f, "\t{axis}\n")?;
+            writeln!(f, "{axis}")?;
         }
 
         write!(f, "\\end{{tikzpicture}}")?;
 
         Ok(())
+    }
+}
+
+impl Picture {
+    /// Create a new, empty picture environment.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pgfplots::Picture;
+    ///
+    /// let mut picture = Picture::new();
+    /// ```
+    pub fn new() -> Self {
+        Default::default()
+    }
+    /// Add a key to control the appearance of the picture. This will overwrite
+    /// any previous mutually exclusive key.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pgfplots::{Picture, PictureKey};
+    ///
+    /// let mut picture = Picture::new();
+    ///
+    /// picture.add_key(PictureKey::Custom(String::from("baseline")));
+    /// ```
+    pub fn add_key(&mut self, key: PictureKey) {
+        match key {
+            PictureKey::Custom(_) => (),
+            // If/whenever another variant is added, handle it the same way as
+            // Axis::add_key and Plot2D::add_key
+        }
+        self.keys.push(key);
     }
 }
 
