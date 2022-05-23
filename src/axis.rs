@@ -1,5 +1,5 @@
 use crate::axis::plot::Plot2D;
-use std::fmt;
+use std::{fmt, process::ExitStatus};
 
 // Only imported for documentation. If you notice that this is no longer the
 // case, please change it.
@@ -114,6 +114,35 @@ impl Axis {
             }
         }
         self.keys.push(key);
+    }
+    /// Executes `pdflatex` with the given `-jobname` as a child process,
+    /// waiting for it to finish and collecting its status.
+    ///
+    /// If successful, this produces a `jobname.pdf` file with the [`Axis`]
+    /// as a standalone PDF. The [`Axis`] is wrapped in a default [`Picture`];
+    /// if you want to customize the picture environment, add the [`Axis`] to a
+    /// [`Picture`] manually.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use pgfplots::axis::Axis;
+    ///
+    /// let mut axis = Axis::new();
+    ///
+    /// let status = axis
+    ///     .pdflatex_standalone("figure")
+    ///     .expect("failed to execute pdflatex");
+    ///
+    /// if status.success() {
+    ///     // There is a `figure.pdf` file with our picture
+    ///     // There are also `figure.log` and `figure.aux` that we can safely remove
+    /// }
+    /// ```
+    pub fn pdflatex_standalone(&self, jobname: &str) -> std::io::Result<ExitStatus> {
+        let mut picture = Picture::new();
+        picture.axes.push(self.clone());
+        picture.pdflatex_standalone(jobname)
     }
 }
 
