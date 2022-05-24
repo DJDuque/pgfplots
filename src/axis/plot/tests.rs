@@ -24,6 +24,10 @@ fn error_character_to_string() {
 fn type_2d_to_string() {
     assert_eq!(Type2D::SharpPlot.to_string(), String::from("sharp plot"));
     assert_eq!(
+        Type2D::Smooth(0.55).to_string(),
+        String::from("smooth, tension=0.55")
+    );
+    assert_eq!(
         Type2D::ConstLeft.to_string(),
         String::from("const plot mark left")
     );

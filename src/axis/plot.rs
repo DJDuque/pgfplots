@@ -188,6 +188,10 @@ impl Plot2D {
 pub enum Type2D {
     /// Coordinates are simply connected by straight lines.
     SharpPlot,
+    /// Interpolate smoothly between successive points. The internal [`f64`]
+    /// corresponds to the tension; recommended initial value is
+    /// `Type2D::Smooth(0.55)`. A higher value results in more "round" curves.
+    Smooth(f64),
     /// Coordinates are connected with horizontal and vertical lines. Marks are
     /// placed to the left of each horizontal line.
     ConstLeft,
@@ -216,6 +220,7 @@ impl fmt::Display for Type2D {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Type2D::SharpPlot => write!(f, "sharp plot"),
+            Type2D::Smooth(tension) => write!(f, "smooth, tension={tension}"),
             Type2D::ConstLeft => write!(f, "const plot mark left"),
             Type2D::ConstRight => write!(f, "const plot mark right"),
             Type2D::ConstMid => write!(f, "const plot mark mid"),
