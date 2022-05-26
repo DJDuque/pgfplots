@@ -1,10 +1,5 @@
-use crate::axis::plot::Plot2D;
+use crate::{axis::plot::Plot2D, Picture};
 use std::fmt;
-
-// Only imported for documentation. If you notice that this is no longer the
-// case, please change it.
-#[allow(unused_imports)]
-use crate::Picture;
 
 /// Plot inside an [`Axis`] environment.
 pub mod plot;
@@ -173,6 +168,38 @@ impl Axis {
             }
         }
         self.keys.push(key);
+    }
+    /// Return a [`String`] with valid LaTeX code that generates a standalone
+    /// PDF with the axis in a default picture environment.
+    ///
+    /// # Note
+    ///
+    /// Passing this string directly to e.g. `pdflatex` will fail to generate a
+    /// PDF document. It is usually necessary to [`str::replace`] all the
+    /// occurrences of `\n` and `\t` with white space before sending this string
+    /// as an argument to a LaTeX compiler.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pgfplots::axis::Axis;
+    ///
+    /// let mut axis = Axis::new();
+    /// assert_eq!(
+    /// r#"\documentclass{standalone}
+    /// \usepackage{pgfplots}
+    /// \begin{document}
+    /// \begin{tikzpicture}
+    /// \begin{axis}
+    /// \end{axis}
+    /// \end{tikzpicture}
+    /// \end{document}"#,
+    /// axis.standalone_string());
+    /// ```
+    pub fn standalone_string(&self) -> String {
+        let mut picture = Picture::new();
+        picture.axes.push(self.clone());
+        picture.standalone_string()
     }
 }
 

@@ -138,6 +138,38 @@ impl Picture {
         }
         self.keys.push(key);
     }
+    /// Return a [`String`] with valid LaTeX code that generates a standalone
+    /// PDF with the picture environment.
+    ///
+    /// # Note
+    ///
+    /// Passing this string directly to e.g. `pdflatex` will fail to generate a
+    /// PDF document. It is usually necessary to [`str::replace`] all the
+    /// occurrences of `\n` and `\t` with white space before sending this string
+    /// as an argument to a LaTeX compiler.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pgfplots::Picture;
+    ///
+    /// let mut picture = Picture::new();
+    /// assert_eq!(
+    /// r#"\documentclass{standalone}
+    /// \usepackage{pgfplots}
+    /// \begin{document}
+    /// \begin{tikzpicture}
+    /// \end{tikzpicture}
+    /// \end{document}"#,
+    /// picture.standalone_string());
+    /// ```
+    pub fn standalone_string(&self) -> String {
+        String::from("\\documentclass{standalone}\n")
+            + "\\usepackage{pgfplots}\n"
+            + "\\begin{document}\n"
+            + &self.to_string()
+            + "\n\\end{document}"
+    }
 }
 
 #[cfg(test)]

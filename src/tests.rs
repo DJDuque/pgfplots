@@ -46,6 +46,20 @@ fn picture_add_key() {
 }
 
 #[test]
+fn picture_standalone_string() {
+    let picture = Picture::new();
+    assert_eq!(
+        r#"\documentclass{standalone}
+\usepackage{pgfplots}
+\begin{document}
+\begin{tikzpicture}
+\end{tikzpicture}
+\end{document}"#,
+        picture.standalone_string()
+    );
+}
+
+#[test]
 fn picture_to_string() {
     let mut picture = Picture::new();
     assert_eq!(
