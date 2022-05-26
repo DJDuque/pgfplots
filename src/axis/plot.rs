@@ -1,6 +1,15 @@
 use crate::axis::{plot::coordinate::Coordinate2D, Axis};
 use std::fmt;
 
+#[cfg(feature = "inclusive")]
+use crate::ShowPdfError;
+
+// Only imported for documentation. If you notice that this is no longer the
+// case, please change it.
+#[cfg(feature = "inclusive")]
+#[allow(unused_imports)]
+use crate::Picture;
+
 /// Coordinates inside a plot.
 pub mod coordinate;
 
@@ -67,6 +76,9 @@ impl fmt::Display for PlotKey {
 ///     .into_iter()
 ///     .map(|i| (f64::from(i), f64::from(i*i)).into())
 ///     .collect();
+///
+/// # #[cfg(feature = "inclusive")]
+/// plot.show();
 /// ```
 #[derive(Clone, Debug, Default)]
 pub struct Plot2D {
@@ -170,6 +182,25 @@ impl Plot2D {
         let mut axis = Axis::new();
         axis.plots.push(self.clone());
         axis.standalone_string()
+    }
+    /// Show the plot in a default [`Axis`] and [`Picture`] as a standalone PDF.
+    /// This will create a file in the location returned by
+    /// [`std::env::temp_dir()`] and open it with the default PDF viewer in your
+    /// system.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use pgfplots::axis::plot::Plot2D;
+    ///
+    /// let mut plot = Plot2D::new();
+    /// plot.show();
+    /// ```
+    #[cfg(feature = "inclusive")]
+    pub fn show(&self) -> Result<(), ShowPdfError> {
+        let mut axis = Axis::new();
+        axis.plots.push(self.clone());
+        axis.show()
     }
 }
 

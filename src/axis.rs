@@ -1,6 +1,9 @@
 use crate::{axis::plot::Plot2D, Picture};
 use std::fmt;
 
+#[cfg(feature = "inclusive")]
+use crate::ShowPdfError;
+
 /// Plot inside an [`Axis`] environment.
 pub mod plot;
 
@@ -59,6 +62,9 @@ impl fmt::Display for AxisKey {
 /// axis.set_title("Picture of $\\gamma$ rays");
 /// axis.set_x_label("$x$~[m]");
 /// axis.set_y_label("$y$~[m]");
+///
+/// # #[cfg(feature = "inclusive")]
+/// axis.show();
 /// ```
 #[derive(Clone, Debug, Default)]
 pub struct Axis {
@@ -200,6 +206,24 @@ impl Axis {
         let mut picture = Picture::new();
         picture.axes.push(self.clone());
         picture.standalone_string()
+    }
+    /// Show the axis in a default [`Picture`] as a standalone PDF. This will
+    /// create a file in the location returned by [`std::env::temp_dir()`] and
+    /// open it with the default PDF viewer in your system.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use pgfplots::axis::Axis;
+    ///
+    /// let mut axis = Axis::new();
+    /// axis.show();
+    /// ```
+    #[cfg(feature = "inclusive")]
+    pub fn show(&self) -> Result<(), ShowPdfError> {
+        let mut picture = Picture::new();
+        picture.axes.push(self.clone());
+        picture.show()
     }
 }
 
