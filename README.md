@@ -10,15 +10,11 @@ high-quality plots.
 
 ## Usage
 
-Users need to have `pdflatex` available in their system with the `pgfplots`
-package. In the unlikely scenario that you don't have this already, install
-any LaTeX distribution manually.
-
 Add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-pgfplots = "0.1"
+pgfplots = { version = "0.2", features = ["inclusive"] }
 ```
 
 Plotting a quadratic function is as simple as:
@@ -32,15 +28,41 @@ plot.coordinates = (-100..100)
     .map(|i| (f64::from(i), f64::from(i*i)).into())
     .collect();
 
-let status = plot
-    .pdflatex_standalone("figure")
-    .expect("failed to run pdflatex");
-
-if status.success() {
-    // There is a `figure.pdf` in current working directory with our picture
-    // There are also `figure.log` and `figure.aux` that we can safely remove
-}
+plot.show()?;
 ```
+
+## Features
+
+- Inclusive: Allow users to process the LaTeX code that generates figures
+without relying on any externally installed software, configuration, or
+resource files. This is achieved by including the
+[tectonic](https://crates.io/crates/tectonic) crate as a dependency.
+
+	If you already have a LaTeX distribution installed in your system, it is
+recommended not to use this feature and process the LaTeX code directly; this
+will significantly reduce compilation and processing times. Plotting a quadratic
+function is still very simple:
+
+	```rust
+	use pgfplots::axis::plot::Plot2D;
+	use std::process::{Command, Stdio};
+
+	let mut plot = Plot2D::new();
+	plot.coordinates = (-100..100)
+		.into_iter()
+		.map(|i| (f64::from(i), f64::from(i*i)).into())
+		.collect();
+
+	let argument = plot.standalone_string().replace('\n', "").replace('\t', "");
+	Command::new("pdflatex")
+		.stdout(Stdio::null())
+		.stderr(Stdio::null())
+		.arg("-interaction=batchmode")
+		.arg("-halt-on-error")
+		.arg("-jobname=figure")
+		.arg(argument)
+		.status();
+	```
 
 ## Want to contribute?
 

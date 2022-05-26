@@ -1,10 +1,14 @@
-use crate::axis::plot::coordinate::Coordinate2D;
-use std::{fmt, process::ExitStatus};
+use crate::axis::{plot::coordinate::Coordinate2D, Axis};
+use std::fmt;
+
+#[cfg(feature = "inclusive")]
+use crate::ShowPdfError;
 
 // Only imported for documentation. If you notice that this is no longer the
 // case, please change it.
+#[cfg(feature = "inclusive")]
 #[allow(unused_imports)]
-use crate::axis::Axis;
+use crate::Picture;
 
 /// Coordinates inside a plot.
 pub mod coordinate;
@@ -73,14 +77,8 @@ impl fmt::Display for PlotKey {
 ///     .map(|i| (f64::from(i), f64::from(i*i)).into())
 ///     .collect();
 ///
-/// let status = plot
-///     .pdflatex_standalone("figure")
-///     .expect("failed to run pdflatex");
-///
-/// if status.success() {
-///     // There is a `figure.pdf` in current working directory with our picture
-///     // There are also `figure.log` and `figure.aux` that we can safely remove
-/// }
+/// # #[cfg(feature = "inclusive")]
+/// plot.show();
 /// ```
 #[derive(Clone, Debug, Default)]
 pub struct Plot2D {
@@ -151,13 +149,44 @@ impl Plot2D {
         }
         self.keys.push(key);
     }
-    /// Executes `pdflatex` with the given `-jobname` as a child process,
-    /// waiting for it to finish and collecting its status.
+    /// Return a [`String`] with valid LaTeX code that generates a standalone
+    /// PDF with the plot in a default axis and picture environment.
     ///
-    /// If successful, this produces a `jobname.pdf` file with the [`Plot2D`]
-    /// as a standalone PDF. The [`Plot2D`] is wrapped in a default [`Axis`];
-    /// if you want to customize the axis environment, add the [`Plot2D`] to an
-    /// [`Axis`] manually.
+    /// # Note
+    ///
+    /// Passing this string directly to e.g. `pdflatex` will fail to generate a
+    /// PDF document. It is usually necessary to [`str::replace`] all the
+    /// occurrences of `\n` and `\t` with white space before sending this string
+    /// as an argument to a LaTeX compiler.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pgfplots::axis::plot::Plot2D;
+    ///
+    /// let mut plot = Plot2D::new();
+    /// assert_eq!(
+    /// "\\documentclass{standalone}
+    /// \\usepackage{pgfplots}
+    /// \\begin{document}
+    /// \\begin{tikzpicture}
+    /// \\begin{axis}
+    /// \t\\addplot[] coordinates {
+    /// \t};
+    /// \\end{axis}
+    /// \\end{tikzpicture}
+    /// \\end{document}",
+    /// plot.standalone_string());
+    /// ```
+    pub fn standalone_string(&self) -> String {
+        let mut axis = Axis::new();
+        axis.plots.push(self.clone());
+        axis.standalone_string()
+    }
+    /// Show the plot in a default [`Axis`] and [`Picture`] as a standalone PDF.
+    /// This will create a file in the location returned by
+    /// [`std::env::temp_dir()`] and open it with the default PDF viewer in your
+    /// system.
     ///
     /// # Examples
     ///
@@ -165,20 +194,13 @@ impl Plot2D {
     /// use pgfplots::axis::plot::Plot2D;
     ///
     /// let mut plot = Plot2D::new();
-    ///
-    /// let status = plot
-    ///     .pdflatex_standalone("figure")
-    ///     .expect("failed to execute pdflatex");
-    ///
-    /// if status.success() {
-    ///     // There is a `figure.pdf` file with our picture
-    ///     // There are also `figure.log` and `figure.aux` that we can safely remove
-    /// }
+    /// plot.show();
     /// ```
-    pub fn pdflatex_standalone(&self, jobname: &str) -> std::io::Result<ExitStatus> {
+    #[cfg(feature = "inclusive")]
+    pub fn show(&self) -> Result<(), ShowPdfError> {
         let mut axis = Axis::new();
         axis.plots.push(self.clone());
-        axis.pdflatex_standalone(jobname)
+        axis.show()
     }
 }
 

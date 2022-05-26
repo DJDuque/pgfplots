@@ -1,8 +1,10 @@
+#![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 //! A Rust library to generate publication-quality figures.
 //!
 //! This crate is a PGFPlots code generator, and provides utilities to create,
-//! customize, and compile high-quality plots. Users need to have the `pdflatex`
-//! LaTeX compiler available in their system with the `pgfplots` package.
+//! customize, and compile high-quality plots. The `inclusive` feature allows
+//! users to fully process figures without relying on any externally installed
+//! software.
 //!
 //! The library's API is designed to feel natural for LaTeX and PGFPlots users,
 //! but no previous experience is required to start generating
@@ -22,14 +24,8 @@
 //!     .map(|i| (f64::from(i), f64::from(i*i)).into())
 //!     .collect();
 //!
-//! let status = plot
-//!     .pdflatex_standalone("figure")
-//!     .expect("failed to run pdflatex");
-//!
-//! if status.success() {
-//!     // There is a `figure.pdf` in current working directory with our picture
-//!     // There are also `figure.log` and `figure.aux` that we can safely remove
-//! }
+//! # #[cfg(feature = "inclusive")]
+//! plot.show();
 //! ```
 //!
 //! It is possible to show multiple plots in the same axis environment by
@@ -46,10 +42,61 @@ use crate::axis::{
 
 use crate::axis::Axis;
 use std::fmt;
-use std::process::{Command, ExitStatus, Stdio};
+
+#[cfg(feature = "inclusive")]
+use std::io::Write;
 
 /// Axis environment inside a [`Picture`].
 pub mod axis;
+
+/// The error type returned when showing a figure fails.
+#[cfg(feature = "inclusive")]
+#[derive(Clone, Copy, Debug)]
+pub enum ShowPdfError {
+    /// Compilation of LaTeX source failed internally
+    Compile,
+    /// Creating or writing to temporary file failed
+    Write,
+    /// Persisting the temporary file failed
+    Persist,
+    /// Opening the file failed
+    Open,
+}
+#[cfg(feature = "inclusive")]
+impl fmt::Display for ShowPdfError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            ShowPdfError::Compile => write!(f, "tectonic compilation error"),
+            ShowPdfError::Write => write!(f, "creating or writing to temporary file failed"),
+            ShowPdfError::Persist => write!(f, "persisting temporary file failed"),
+            ShowPdfError::Open => write!(f, "opening file error"),
+        }
+    }
+}
+#[cfg(feature = "inclusive")]
+impl From<tectonic::errors::Error> for ShowPdfError {
+    fn from(_: tectonic::errors::Error) -> Self {
+        Self::Compile
+    }
+}
+#[cfg(feature = "inclusive")]
+impl From<std::io::Error> for ShowPdfError {
+    fn from(_: std::io::Error) -> Self {
+        Self::Write
+    }
+}
+#[cfg(feature = "inclusive")]
+impl From<tempfile::PersistError> for ShowPdfError {
+    fn from(_: tempfile::PersistError) -> Self {
+        Self::Persist
+    }
+}
+#[cfg(feature = "inclusive")]
+impl From<opener::OpenError> for ShowPdfError {
+    fn from(_: opener::OpenError) -> Self {
+        Self::Open
+    }
+}
 
 /// Ti*k*Z options passed to the [`Picture`] environment.
 ///
@@ -147,11 +194,41 @@ impl Picture {
         }
         self.keys.push(key);
     }
-    /// Executes `pdflatex` with the given `-jobname` as a child process,
-    /// waiting for it to finish and collecting its status.
+    /// Return a [`String`] with valid LaTeX code that generates a standalone
+    /// PDF with the picture environment.
     ///
-    /// If successful, this produces a `jobname.pdf` file with the [`Picture`]
-    /// as a standalone PDF.
+    /// # Note
+    ///
+    /// Passing this string directly to e.g. `pdflatex` will fail to generate a
+    /// PDF document. It is usually necessary to [`str::replace`] all the
+    /// occurrences of `\n` and `\t` with white space before sending this string
+    /// as an argument to a LaTeX compiler.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pgfplots::Picture;
+    ///
+    /// let mut picture = Picture::new();
+    /// assert_eq!(
+    /// r#"\documentclass{standalone}
+    /// \usepackage{pgfplots}
+    /// \begin{document}
+    /// \begin{tikzpicture}
+    /// \end{tikzpicture}
+    /// \end{document}"#,
+    /// picture.standalone_string());
+    /// ```
+    pub fn standalone_string(&self) -> String {
+        String::from("\\documentclass{standalone}\n")
+            + "\\usepackage{pgfplots}\n"
+            + "\\begin{document}\n"
+            + &self.to_string()
+            + "\n\\end{document}"
+    }
+    /// Show the picture as a standalone PDF. This will create a file in the
+    /// location returned by [`std::env::temp_dir()`] and open it with the
+    /// default PDF viewer in your system.
     ///
     /// # Examples
     ///
@@ -159,32 +236,19 @@ impl Picture {
     /// use pgfplots::Picture;
     ///
     /// let mut picture = Picture::new();
-    ///
-    /// let status = picture
-    ///     .pdflatex_standalone("figure")
-    ///     .expect("failed to execute pdflatex");
-    ///
-    /// if status.success() {
-    ///     // There is a `figure.pdf` file with our picture
-    ///     // There are also `figure.log` and `figure.aux` that we can safely remove
-    /// }
+    /// picture.show();
     /// ```
-    pub fn pdflatex_standalone(&self, jobname: &str) -> std::io::Result<ExitStatus> {
-        let argument =
-            (String::from("\\documentclass{standalone}\\usepackage{pgfplots}\\begin{document}")
-                + &self.to_string()
-                + "\\end{document}")
-                .replace('\n', "")
-                .replace('\t', "");
+    #[cfg(feature = "inclusive")]
+    pub fn show(&self) -> Result<(), ShowPdfError> {
+        let pdf_data = tectonic::latex_to_pdf(self.standalone_string())?;
 
-        Command::new("pdflatex")
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .arg("-interaction=batchmode")
-            .arg("-halt-on-error")
-            .arg(String::from("-jobname=") + jobname)
-            .arg(argument)
-            .status()
+        let mut file = tempfile::NamedTempFile::new()?;
+        file.write_all(&pdf_data)?;
+        let (_file, path) = file.keep()?;
+
+        opener::open(&path)?;
+
+        Ok(())
     }
 }
 
