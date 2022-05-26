@@ -2,8 +2,9 @@
 //! A Rust library to generate publication-quality figures.
 //!
 //! This crate is a PGFPlots code generator, and provides utilities to create,
-//! customize, and compile high-quality plots. Users need to have the `pdflatex`
-//! LaTeX compiler available in their system with the `pgfplots` package.
+//! customize, and compile high-quality plots. The `inclusive` feature allows
+//! users to fully process figures without relying on any externally installed
+//! software.
 //!
 //! The library's API is designed to feel natural for LaTeX and PGFPlots users,
 //! but no previous experience is required to start generating
