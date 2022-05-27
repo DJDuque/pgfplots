@@ -19,7 +19,7 @@ fn main() {
 
     let mut plot = Plot2D::new();
     plot.coordinates = vertices.into_iter().map(|v| v.into()).collect();
-    plot.add_key(PlotKey::Custom(String::from("fill=gray!30")));
+    plot.add_key(PlotKey::Custom(String::from("fill=gray!20")));
 
     let mut axis = Axis::new();
     axis.set_title("Kloch Snowflake");
