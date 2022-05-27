@@ -31,6 +31,14 @@ plot.coordinates = (-100..100)
 plot.show()?;
 ```
 
+## [Examples](https://github.com/DJDuque/pgfplots/tree/main/examples)
+
+Click on each image to see their source code:
+
+| | | |
+|-|-|-|
+|![](https://github.com/DJDuque/pgfplots/blob/main/examples/fitted_line.png)|![](https://github.com/DJDuque/pgfplots/blob/main/examples/rectangle_integration.png)|![](https://github.com/DJDuque/pgfplots/blob/main/examples/snowflake.png)|
+
 ## Features
 
 - Inclusive: Allow users to process the LaTeX code that generates figures
