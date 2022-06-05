@@ -14,7 +14,7 @@ Add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-pgfplots = { version = "0.2", features = ["inclusive"] }
+pgfplots = { version = "0.3", features = ["inclusive"] }
 ```
 
 Plotting a quadratic function is as simple as:
