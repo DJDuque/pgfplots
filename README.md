@@ -14,7 +14,7 @@ Add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-pgfplots = { version = "0.2", features = ["inclusive"] }
+pgfplots = { version = "0.3", features = ["inclusive"] }
 ```
 
 Plotting a quadratic function is as simple as:
@@ -33,9 +33,11 @@ plot.show()?;
 
 ## [Examples](https://github.com/DJDuque/pgfplots/tree/main/examples)
 
-Click on each image to see their source code:
+A more extensive list of examples and their source code is available in the
+`examples/` directory (runnable with
+`cargo run --all-features --example example_name`).
 
-| | | |
+|[[code]](https://github.com/DJDuque/pgfplots/blob/main/examples/fitted_line.rs)|[[code]](https://github.com/DJDuque/pgfplots/blob/main/examples/rectangle_integration.rs)|[[code]](https://github.com/DJDuque/pgfplots/blob/main/examples/snowflake.rs)|
 |-|-|-|
 |![](https://github.com/DJDuque/pgfplots/blob/main/examples/fitted_line.png)|![](https://github.com/DJDuque/pgfplots/blob/main/examples/rectangle_integration.png)|![](https://github.com/DJDuque/pgfplots/blob/main/examples/snowflake.png)|
 
