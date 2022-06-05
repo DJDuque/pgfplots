@@ -6,7 +6,6 @@ use crate::ShowPdfError;
 
 // Only imported for documentation. If you notice that this is no longer the
 // case, please change it.
-#[cfg(feature = "inclusive")]
 #[allow(unused_imports)]
 use crate::Picture;
 
@@ -229,6 +228,19 @@ pub enum Type2D {
     JumpRight,
     /// Variant of [`Type2D::ConstMid`] which does not draw vertical lines.
     JumpMid,
+    /// Draw horizontal bars between the *y = 0* line and each coordinate. The
+    /// `bar_width` field controls the width of the horizontal bars, and
+    /// `bar_shift` controls the vertical shift. Unless you are plotting
+    /// multiple bars in the same [`Axis`], you most likely want `bar_shift: 0`.
+    ///
+    /// # Note
+    ///
+    /// By default, `bar_width` and `bar_shift` are assumed to be in `pt` units.
+    /// If you want them to be interpreted as axis units (this is most likely
+    /// what you want), you need to add the plot to an [`Axis`], add the
+    /// [`Axis`] to a [`Picture`], and set `compat=1.7` or higher on the
+    /// [`Picture`].
+    XBar { bar_width: f64, bar_shift: f64 },
     /// Similar to [`Type2D::XBar`] except that it draws a single horizontal
     /// lines instead of rectangles.
     XComb,
@@ -249,6 +261,10 @@ impl fmt::Display for Type2D {
             Type2D::JumpLeft => write!(f, "jump mark left"),
             Type2D::JumpRight => write!(f, "jump mark right"),
             Type2D::JumpMid => write!(f, "jump mark mid"),
+            Type2D::XBar {
+                bar_width,
+                bar_shift,
+            } => write!(f, "xbar, bar width={bar_width}, bar shift={bar_shift}"),
             Type2D::XComb => write!(f, "xcomb"),
             Type2D::YComb => write!(f, "ycomb"),
             Type2D::OnlyMarks => write!(f, "only marks"),

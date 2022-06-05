@@ -20,6 +20,36 @@ fn error_character_to_string() {
     );
 }
 
+// This test is here only to let us know if we added an enum variant
+// but we forgot to add unit tests for it
+//
+// If this fails, it is because you added a new variant.
+// Please do the following:
+// 1) Add a unit test for the new variant you added (see examples below).
+// 2) AFTER doing (1), add the new variant to the match.
+#[test]
+fn plot_type2d_tested() {
+    let type_2d = Type2D::OnlyMarks;
+    match type_2d {
+        Type2D::SharpPlot => (),
+        Type2D::Smooth { tension: _ } => (),
+        Type2D::ConstLeft => (),
+        Type2D::ConstRight => (),
+        Type2D::ConstMid => (),
+        Type2D::JumpLeft => (),
+        Type2D::JumpRight => (),
+        Type2D::JumpMid => (),
+        Type2D::XBar {
+            bar_width: _,
+            bar_shift: _,
+        } => (),
+        Type2D::XComb => (),
+        Type2D::YComb => (),
+        Type2D::OnlyMarks => (),
+    }
+    assert!(true);
+}
+
 #[test]
 fn type_2d_to_string() {
     assert_eq!(Type2D::SharpPlot.to_string(), String::from("sharp plot"));
@@ -45,6 +75,22 @@ fn type_2d_to_string() {
         String::from("jump mark right")
     );
     assert_eq!(Type2D::JumpMid.to_string(), String::from("jump mark mid"));
+    assert_eq!(
+        Type2D::XBar {
+            bar_width: 0.5,
+            bar_shift: 1.0
+        }
+        .to_string(),
+        String::from("xbar, bar width=0.5, bar shift=1")
+    );
+    assert_eq!(
+        Type2D::XBar {
+            bar_shift: 1.0,
+            bar_width: 0.5
+        }
+        .to_string(),
+        String::from("xbar, bar width=0.5, bar shift=1")
+    );
     assert_eq!(Type2D::XComb.to_string(), String::from("xcomb"));
     assert_eq!(Type2D::YComb.to_string(), String::from("ycomb"));
     assert_eq!(Type2D::OnlyMarks.to_string(), String::from("only marks"));
