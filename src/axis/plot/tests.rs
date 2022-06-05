@@ -43,6 +43,10 @@ fn plot_type2d_tested() {
             bar_width: _,
             bar_shift: _,
         } => (),
+        Type2D::YBar {
+            bar_width: _,
+            bar_shift: _,
+        } => (),
         Type2D::XComb => (),
         Type2D::YComb => (),
         Type2D::OnlyMarks => (),
@@ -90,6 +94,22 @@ fn type_2d_to_string() {
         }
         .to_string(),
         String::from("xbar, bar width=0.5, bar shift=1")
+    );
+    assert_eq!(
+        Type2D::YBar {
+            bar_width: 0.5,
+            bar_shift: 1.0
+        }
+        .to_string(),
+        String::from("ybar, bar width=0.5, bar shift=1")
+    );
+    assert_eq!(
+        Type2D::YBar {
+            bar_shift: 1.0,
+            bar_width: 0.5
+        }
+        .to_string(),
+        String::from("ybar, bar width=0.5, bar shift=1")
     );
     assert_eq!(Type2D::XComb.to_string(), String::from("xcomb"));
     assert_eq!(Type2D::YComb.to_string(), String::from("ycomb"));
