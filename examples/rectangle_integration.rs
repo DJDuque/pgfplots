@@ -1,5 +1,5 @@
 use pgfplots::axis::{
-    plot::{Plot2D, PlotKey},
+    plot::{Plot2D, PlotKey, Type2D},
     Axis, AxisKey,
 };
 
@@ -19,7 +19,10 @@ fn main() {
         .map(|i| (f64::from(i), f64::from(i * i)).into())
         .collect();
     // Currently have to "guess" the bar width. Still pending the \compat key
-    rectangles.add_key(PlotKey::Custom(String::from("ybar, bar width=19.5")));
+    rectangles.add_key(PlotKey::Type2D(Type2D::YBar {
+        bar_width: 19.5,
+        bar_shift: 0.0,
+    }));
     rectangles.add_key(PlotKey::Custom(String::from("fill=gray!20")));
     rectangles.add_key(PlotKey::Custom(String::from("draw opacity=0.5")));
 
