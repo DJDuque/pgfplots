@@ -39,7 +39,7 @@ A more extensive list of examples and their source code is available in the
 
 |[[code]](https://github.com/DJDuque/pgfplots/blob/main/examples/fitted_line.rs)|[[code]](https://github.com/DJDuque/pgfplots/blob/main/examples/rectangle_integration.rs)|[[code]](https://github.com/DJDuque/pgfplots/blob/main/examples/snowflake.rs)|
 |-|-|-|
-|![](https://github.com/DJDuque/pgfplots/blob/main/examples/fitted_line.png)|![](https://github.com/DJDuque/pgfplots/blob/main/examples/rectangle_integration.png)|![](https://github.com/DJDuque/pgfplots/blob/main/examples/snowflake.png)|
+|![](https://github.com/DJDuque/pgfplots/raw/main/examples/fitted_line.png)|![](https://github.com/DJDuque/pgfplots/raw/main/examples/rectangle_integration.png)|![](https://github.com/DJDuque/pgfplots/raw/main/examples/snowflake.png)|
 
 ## Features
 
