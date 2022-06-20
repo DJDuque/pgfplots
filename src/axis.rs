@@ -120,8 +120,8 @@ impl Axis {
     /// let mut axis = Axis::new();
     /// axis.set_title("My plot: $y = x^2$");
     /// ```
-    pub fn set_title(&mut self, title: &str) {
-        self.add_key(AxisKey::Title(String::from(title)));
+    pub fn set_title<S: Into<String>>(&mut self, title: S) {
+        self.add_key(AxisKey::Title(title.into()));
     }
     /// Set the label of the *x* axis. This can be valid LaTeX e.g. inline math.
     ///
@@ -133,8 +133,8 @@ impl Axis {
     /// let mut axis = Axis::new();
     /// axis.set_x_label("$x$~[m]");
     /// ```
-    pub fn set_x_label(&mut self, label: &str) {
-        self.add_key(AxisKey::XLabel(String::from(label)));
+    pub fn set_x_label<S: Into<String>>(&mut self, label: S) {
+        self.add_key(AxisKey::XLabel(label.into()));
     }
     /// Set the label of the *y* axis. This can be valid LaTeX e.g. inline math.
     ///
@@ -146,8 +146,8 @@ impl Axis {
     /// let mut axis = Axis::new();
     /// axis.set_y_label("$y$~[m]");
     /// ```
-    pub fn set_y_label(&mut self, label: &str) {
-        self.add_key(AxisKey::YLabel(String::from(label)));
+    pub fn set_y_label<S: Into<String>>(&mut self, label: S) {
+        self.add_key(AxisKey::YLabel(label.into()));
     }
     /// Add a key to control the appearance of the axis. This will overwrite
     /// any previous mutually exclusive key.
