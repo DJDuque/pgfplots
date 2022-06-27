@@ -49,9 +49,9 @@ resource files. This is achieved by including the
 [tectonic](https://crates.io/crates/tectonic) crate as a dependency.
 
 	If you already have a LaTeX distribution installed in your system, it is
-recommended not to use this feature and process the LaTeX code directly; this
-will significantly reduce compilation and processing times. Plotting a quadratic
-function is still very simple:
+recommended to process the LaTeX code directly. The `tectonic` crate pulls in a
+lot of dependencies, which significantly increase compilation and processing
+ times. Plotting a quadratic function is still very simple:
 
 	```rust
 	use pgfplots::axis::plot::Plot2D;
@@ -71,7 +71,8 @@ function is still very simple:
 		.arg("-halt-on-error")
 		.arg("-jobname=figure")
 		.arg(argument)
-		.status();
+		.status()
+		.expect("Error: unable to run pdflatex");
 	```
 
 ## Want to contribute?
