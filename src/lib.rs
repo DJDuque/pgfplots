@@ -242,7 +242,7 @@ impl Picture {
     pub fn show(&self) -> Result<(), ShowPdfError> {
         let pdf_data = tectonic::latex_to_pdf(self.standalone_string())?;
 
-        let mut file = tempfile::NamedTempFile::new()?;
+        let mut file = tempfile::Builder::new().suffix(".pdf").tempfile()?;
         file.write_all(&pdf_data)?;
         let (_file, path) = file.keep()?;
 
