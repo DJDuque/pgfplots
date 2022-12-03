@@ -25,7 +25,6 @@ fn axis_keys_tested() {
         AxisKey::XLabel(_) => (),
         AxisKey::YLabel(_) => (),
     }
-    assert!(true);
 }
 
 #[test]

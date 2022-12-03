@@ -14,7 +14,6 @@ fn picture_keys_tested() {
     match picture_key {
         PictureKey::Custom(_) => (),
     }
-    assert!(true);
 }
 
 #[test]
