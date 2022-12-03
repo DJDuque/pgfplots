@@ -2,7 +2,6 @@
 
 [![Test Status](https://github.com/DJDuque/pgfplots/actions/workflows/rust.yml/badge.svg)](https://github.com/DJDuque/pgfplots/actions/workflows/rust.yml)
 [![Crates.io](https://img.shields.io/crates/v/pgfplots?labelColor=383f47)](https://crates.io/crates/pgfplots)
-[![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/DJDuque/pgfplots/latest?labelColor=383f47)](https://github.com/DJDuque/pgfplots/commits/main)
 
 A Rust library to generate publication-quality figures. This crate is a PGFPlots
 code generator, and provides utilities to create, customize, and compile 
