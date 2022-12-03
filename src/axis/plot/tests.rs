@@ -51,7 +51,6 @@ fn plot_type2d_tested() {
         Type2D::YComb => (),
         Type2D::OnlyMarks => (),
     }
-    assert!(true);
 }
 
 #[test]
@@ -134,7 +133,6 @@ fn plot_keys_tested() {
         PlotKey::YError(_) => (),
         PlotKey::YErrorDirection(_) => (),
     }
-    assert!(true);
 }
 
 #[test]

@@ -1,0 +1,32 @@
+name: Clippy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  clippy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install SARIF tools
+      run: cargo install clippy-sarif sarif-fmt
+    - name: Run clippy
+      run: >
+        cargo clippy --all-targets --message-format=json -- -D warnings
+        | clippy-sarif
+        | tee clippy-results.sarif
+        | sarif-fmt
+      continue-on-error: true
+    - name: Upload results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: clippy-results.sarif
+        wait-for-processing: true
