@@ -313,24 +313,6 @@ fn plot_2d_add_key() {
 }
 
 #[test]
-fn plot_standalone_string() {
-    let plot = Plot2D::new();
-    assert_eq!(
-        "\\documentclass{standalone}
-\\usepackage{pgfplots}
-\\begin{document}
-\\begin{tikzpicture}
-\\begin{axis}
-\t\\addplot[] coordinates {
-\t};
-\\end{axis}
-\\end{tikzpicture}
-\\end{document}",
-        plot.standalone_string()
-    );
-}
-
-#[test]
 fn plot_2d_to_string() {
     let mut plot = Plot2D::new();
     assert_eq!(plot.to_string(), "\t\\addplot[] coordinates {\n\t};");

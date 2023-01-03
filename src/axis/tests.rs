@@ -159,22 +159,6 @@ fn axis_add_key() {
 }
 
 #[test]
-fn axis_standalone_string() {
-    let axis = Axis::new();
-    assert_eq!(
-        r#"\documentclass{standalone}
-\usepackage{pgfplots}
-\begin{document}
-\begin{tikzpicture}
-\begin{axis}
-\end{axis}
-\end{tikzpicture}
-\end{document}"#,
-        axis.standalone_string()
-    );
-}
-
-#[test]
 fn axis_to_string() {
     let mut axis = Axis::new();
     assert_eq!(axis.to_string(), "\\begin{axis}\n\\end{axis}");

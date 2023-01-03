@@ -43,60 +43,8 @@ use crate::axis::{
 use crate::axis::Axis;
 use std::fmt;
 
-#[cfg(feature = "inclusive")]
-use std::io::Write;
-
 /// Axis environment inside a [`Picture`].
 pub mod axis;
-
-/// The error type returned when showing a figure fails.
-#[cfg(feature = "inclusive")]
-#[derive(Clone, Copy, Debug)]
-pub enum ShowPdfError {
-    /// Compilation of LaTeX source failed internally
-    Compile,
-    /// Creating or writing to temporary file failed
-    Write,
-    /// Persisting the temporary file failed
-    Persist,
-    /// Opening the file failed
-    Open,
-}
-#[cfg(feature = "inclusive")]
-impl fmt::Display for ShowPdfError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            ShowPdfError::Compile => write!(f, "tectonic compilation error"),
-            ShowPdfError::Write => write!(f, "creating or writing to temporary file failed"),
-            ShowPdfError::Persist => write!(f, "persisting temporary file failed"),
-            ShowPdfError::Open => write!(f, "opening file error"),
-        }
-    }
-}
-#[cfg(feature = "inclusive")]
-impl From<tectonic::errors::Error> for ShowPdfError {
-    fn from(_: tectonic::errors::Error) -> Self {
-        Self::Compile
-    }
-}
-#[cfg(feature = "inclusive")]
-impl From<std::io::Error> for ShowPdfError {
-    fn from(_: std::io::Error) -> Self {
-        Self::Write
-    }
-}
-#[cfg(feature = "inclusive")]
-impl From<tempfile::PersistError> for ShowPdfError {
-    fn from(_: tempfile::PersistError) -> Self {
-        Self::Persist
-    }
-}
-#[cfg(feature = "inclusive")]
-impl From<opener::OpenError> for ShowPdfError {
-    fn from(_: opener::OpenError) -> Self {
-        Self::Open
-    }
-}
 
 /// Ti*k*Z options passed to the [`Picture`] environment.
 ///
@@ -225,30 +173,6 @@ impl Picture {
             + "\\begin{document}\n"
             + &self.to_string()
             + "\n\\end{document}"
-    }
-    /// Show the picture as a standalone PDF. This will create a file in the
-    /// location returned by [`std::env::temp_dir()`] and open it with the
-    /// default PDF viewer in your system.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use pgfplots::Picture;
-    ///
-    /// let mut picture = Picture::new();
-    /// picture.show();
-    /// ```
-    #[cfg(feature = "inclusive")]
-    pub fn show(&self) -> Result<(), ShowPdfError> {
-        let pdf_data = tectonic::latex_to_pdf(self.standalone_string())?;
-
-        let mut file = tempfile::Builder::new().suffix(".pdf").tempfile()?;
-        file.write_all(&pdf_data)?;
-        let (_file, path) = file.keep()?;
-
-        opener::open(&path)?;
-
-        Ok(())
     }
 }
 

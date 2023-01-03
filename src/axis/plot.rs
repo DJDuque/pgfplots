@@ -1,8 +1,5 @@
-use crate::axis::{plot::coordinate::Coordinate2D, Axis};
+use crate::axis::plot::coordinate::Coordinate2D;
 use std::fmt;
-
-#[cfg(feature = "inclusive")]
-use crate::ShowPdfError;
 
 // Only imported for documentation. If you notice that this is no longer the
 // case, please change it.
@@ -147,59 +144,6 @@ impl Plot2D {
             }
         }
         self.keys.push(key);
-    }
-    /// Return a [`String`] with valid LaTeX code that generates a standalone
-    /// PDF with the plot in a default axis and picture environment.
-    ///
-    /// # Note
-    ///
-    /// Passing this string directly to e.g. `pdflatex` will fail to generate a
-    /// PDF document. It is usually necessary to [`str::replace`] all the
-    /// occurrences of `\n` and `\t` with white space before sending this string
-    /// as an argument to a LaTeX compiler.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use pgfplots::axis::plot::Plot2D;
-    ///
-    /// let mut plot = Plot2D::new();
-    /// assert_eq!(
-    /// "\\documentclass{standalone}
-    /// \\usepackage{pgfplots}
-    /// \\begin{document}
-    /// \\begin{tikzpicture}
-    /// \\begin{axis}
-    /// \t\\addplot[] coordinates {
-    /// \t};
-    /// \\end{axis}
-    /// \\end{tikzpicture}
-    /// \\end{document}",
-    /// plot.standalone_string());
-    /// ```
-    pub fn standalone_string(&self) -> String {
-        let mut axis = Axis::new();
-        axis.plots.push(self.clone());
-        axis.standalone_string()
-    }
-    /// Show the plot in a default [`Axis`] and [`Picture`] as a standalone PDF.
-    /// This will create a file in the location returned by
-    /// [`std::env::temp_dir()`] and open it with the default PDF viewer in your
-    /// system.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use pgfplots::axis::plot::Plot2D;
-    ///
-    /// let mut plot = Plot2D::new();
-    /// plot.show();
-    /// ```
-    #[cfg(feature = "inclusive")]
-    pub fn show(&self) -> Result<(), ShowPdfError> {
-        let mut axis = Axis::new();
-        axis.plots.push(self.clone());
-        axis.show()
     }
 }
 
