@@ -4,7 +4,7 @@ use std::fmt;
 // Only imported for documentation. If you notice that this is no longer the
 // case, please change it.
 #[allow(unused_imports)]
-use crate::Picture;
+use crate::{Axis, Picture};
 
 /// Coordinates inside a plot.
 pub mod coordinate;

@@ -11,12 +11,13 @@ categories = ["visualization"]
 documentation = "https://docs.rs/pgfplots"
 
 [dependencies]
+opener = "0.5"
 tectonic = { version = "0.12", optional = true }
-tempfile = { version = "3", optional = true }
-opener = { version = "0.5", optional = true }
+tempfile = "3"
+thiserror = "1"
 
 [features]
-inclusive = ["dep:tectonic", "dep:tempfile", "dep:opener"]
+inclusive = ["dep:tectonic"]
 
 [package.metadata.docs.rs]
 all-features = true

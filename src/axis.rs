@@ -1,6 +1,11 @@
 use crate::axis::plot::Plot2D;
 use std::fmt;
 
+// Only imported for documentation. If you notice that this is no longer the
+// case, please change it.
+#[allow(unused_imports)]
+use crate::Picture;
+
 /// Plot inside an [`Axis`] environment.
 pub mod plot;
 

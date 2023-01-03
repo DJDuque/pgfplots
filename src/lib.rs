@@ -42,9 +42,40 @@ use crate::axis::{
 
 use crate::axis::Axis;
 use std::fmt;
+use std::io::Write;
+use std::path::Path;
+use std::process::{Command, ExitStatus, Stdio};
+use tempfile::NamedTempFile;
+use thiserror::Error;
 
 /// Axis environment inside a [`Picture`].
 pub mod axis;
+
+/// Engine to compile a [`Picture`] into a PDF.
+#[derive(Clone, Copy, Debug)]
+#[non_exhaustive]
+pub enum Engine {
+    /// `Pdflatex` engine (requires `pdflatex` to be installed).
+    PdfLatex,
+    #[cfg(feature = "inclusive")]
+    /// `Tectonic` engine (does not require any external software).
+    Tectonic,
+}
+
+/// The error type returned when a [`Picture`] fails to compile into a PDF.
+#[derive(Debug, Error)]
+pub enum CompileError {
+    /// I/O error.
+    #[error("io error")]
+    IoError(#[from] std::io::Error),
+    /// Compilation was executed but returned a non-zero exit code.
+    #[error("compilation failed with status {status}")]
+    BadExitCode { status: ExitStatus },
+    #[cfg(feature = "inclusive")]
+    /// Tectonic error.
+    #[error("tectonic error")]
+    TectonicError(#[from] tectonic::errors::Error),
+}
 
 /// Ti*k*Z options passed to the [`Picture`] environment.
 ///
@@ -173,6 +204,95 @@ impl Picture {
             + "\\begin{document}\n"
             + &self.to_string()
             + "\n\\end{document}"
+    }
+    /// Compile the picture environment into a standalone PDF document. This
+    /// will create the file `jobname.pdf` in the specified `working_dir`
+    /// (additional files will be created in the same directory e.g. `.log` and
+    /// `.aux` files).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use pgfplots::CompileError;
+    /// # fn main() -> Result<(), CompileError> {
+    /// use pgfplots::{Engine, Picture};
+    ///
+    /// let picture = Picture::new();
+    /// picture.to_pdf("./", "jobname", Engine::PdfLatex)?;
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn to_pdf<P, S>(
+        &self,
+        working_dir: P,
+        jobname: S,
+        engine: Engine,
+    ) -> Result<(), CompileError>
+    where
+        P: AsRef<Path>,
+        // str instead of OsStr because of Tectonic's `tex_input_file`
+        S: AsRef<str>,
+    {
+        // Copy the tex code to a temporary file instead of passing it directly
+        // to the engine via e.g. stdin. This avoids the "Argument list too
+        // long" error when there are e.g. too many points in a plot.
+        let tex_file = NamedTempFile::new()?;
+        tex_file
+            .as_file()
+            .write_all(self.standalone_string().as_bytes())?;
+
+        match engine {
+            Engine::PdfLatex => {
+                let status = Command::new("pdflatex")
+                    .current_dir(working_dir)
+                    .stdout(Stdio::null())
+                    .stderr(Stdio::null())
+                    .arg("-interaction=batchmode")
+                    .arg("-halt-on-error")
+                    .arg(String::from("-jobname=") + jobname.as_ref())
+                    .arg(tex_file.path())
+                    .status()?;
+
+                if !status.success() {
+                    return Err(CompileError::BadExitCode { status });
+                }
+            }
+            #[cfg(feature = "inclusive")]
+            // Modified from `tectonic::latex_to_pdf` to generate the files
+            // instead of just returning the bytes.
+            Engine::Tectonic => {
+                let mut status = tectonic::status::NoopStatusBackend::default();
+
+                let auto_create_config_file = false;
+                let config = tectonic::ctry!(tectonic::config::PersistentConfig::open(auto_create_config_file);
+                       "failed to open the default configuration file");
+
+                let only_cached = false;
+                let bundle = tectonic::ctry!(config.default_bundle(only_cached, &mut status);
+                       "failed to load the default resource bundle");
+
+                let format_cache_path = tectonic::ctry!(config.format_cache_path();
+                                  "failed to set up the format cache");
+
+                let mut sb = tectonic::driver::ProcessingSessionBuilder::default();
+                sb.bundle(bundle)
+                    .primary_input_path(tex_file.path())
+                    .tex_input_name(jobname.as_ref())
+                    .format_name("latex")
+                    .format_cache_path(format_cache_path)
+                    // Just to keep the behaviour consistent with `pdflatex`
+                    .keep_logs(true)
+                    .keep_intermediates(true)
+                    .print_stdout(false)
+                    .output_format(tectonic::driver::OutputFormat::Pdf)
+                    .output_dir(working_dir);
+
+                let mut sess = tectonic::ctry!(sb.create(&mut status); "failed to initialize the LaTeX processing session");
+                tectonic::ctry!(sess.run(&mut status); "the LaTeX engine failed");
+            }
+        }
+        Ok(())
     }
 }
 
