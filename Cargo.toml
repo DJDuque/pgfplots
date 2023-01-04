@@ -12,6 +12,7 @@ documentation = "https://docs.rs/pgfplots"
 
 [dependencies]
 opener = "0.5"
+rand = "0.8"
 tectonic = { version = "0.12", optional = true }
 tempfile = "3"
 thiserror = "1"

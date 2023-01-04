@@ -41,6 +41,7 @@ use crate::axis::{
 };
 
 use crate::axis::Axis;
+use rand::distributions::{Alphanumeric, DistString};
 use std::fmt;
 use std::io::Write;
 use std::path::Path;
@@ -75,6 +76,17 @@ pub enum CompileError {
     /// Tectonic error.
     #[error("tectonic error")]
     TectonicError(#[from] tectonic::errors::Error),
+}
+
+/// The error type returned when showing a [`Picture`] fails.
+#[derive(Debug, Error)]
+pub enum ShowPdfError {
+    /// Compilation error.
+    #[error("compilation error")]
+    BadCompilation(#[from] CompileError),
+    /// Opening the PDF failed.
+    #[error("opening the pdf failed")]
+    OpenerError(#[from] opener::OpenError),
 }
 
 /// Ti*k*Z options passed to the [`Picture`] environment.
@@ -212,7 +224,7 @@ impl Picture {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// # use pgfplots::CompileError;
     /// # fn main() -> Result<(), CompileError> {
     /// use pgfplots::{Engine, Picture};
@@ -237,10 +249,8 @@ impl Picture {
         // Copy the tex code to a temporary file instead of passing it directly
         // to the engine via e.g. stdin. This avoids the "Argument list too
         // long" error when there are e.g. too many points in a plot.
-        let tex_file = NamedTempFile::new()?;
-        tex_file
-            .as_file()
-            .write_all(self.standalone_string().as_bytes())?;
+        let mut tex_file = NamedTempFile::new()?;
+        tex_file.write_all(self.standalone_string().as_bytes())?;
 
         match engine {
             Engine::PdfLatex => {
@@ -292,6 +302,46 @@ impl Picture {
                 tectonic::ctry!(sess.run(&mut status); "the LaTeX engine failed");
             }
         }
+        Ok(())
+    }
+    /// Show the picture environment in a standalone PDF document. This will
+    /// create a file in the location returned by [`std::env::temp_dir`] and
+    /// open it with the default PDF viewer.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use pgfplots::ShowPdfError;
+    /// # fn main() -> Result<(), ShowPdfError> {
+    /// use pgfplots::{Engine, Picture};
+    ///
+    /// let picture = Picture::new();
+    /// picture.show_pdf(Engine::PdfLatex)?;
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn show_pdf(&self, engine: Engine) -> Result<(), ShowPdfError> {
+        // Return a random string that can be used as a `jobname` to compile a
+        // [`Picture`] in `std::env::temp_dir()`. This should not overwrite
+        // any existing files.
+        fn random_jobname() -> String {
+            loop {
+                let mut jobname = "pgfplots_".to_string();
+                Alphanumeric.append_string(&mut rand::thread_rng(), &mut jobname, 8);
+                let pdf_path = std::env::temp_dir().join(jobname.clone() + ".pdf");
+                let log_path = std::env::temp_dir().join(jobname.clone() + ".log");
+                let aux_path = std::env::temp_dir().join(jobname.clone() + ".aux");
+                if !pdf_path.exists() && !log_path.exists() && !aux_path.exists() {
+                    return jobname;
+                }
+            }
+        }
+
+        let jobname = random_jobname();
+        self.to_pdf(std::env::temp_dir(), &jobname, engine)?;
+        let pdf_path = std::env::temp_dir().join(jobname + ".pdf");
+        opener::open(pdf_path)?;
         Ok(())
     }
 }
