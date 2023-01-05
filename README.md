@@ -13,13 +13,13 @@ Add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-pgfplots = { version = "0.4", features = ["inclusive"] }
+pgfplots = "0.4"
 ```
 
 Plotting a quadratic function is as simple as:
 
 ```rust
-use pgfplots::axis::plot::Plot2D;
+use pgfplots::{axis::plot::Plot2D, Engine, Picture};
 
 let mut plot = Plot2D::new();
 plot.coordinates = (-100..100)
@@ -27,7 +27,7 @@ plot.coordinates = (-100..100)
     .map(|i| (f64::from(i), f64::from(i*i)).into())
     .collect();
 
-plot.show()?;
+Picture::from(plot).show_pdf(Engine::PdfLatex)?;
 ```
 
 ## [Examples](https://github.com/DJDuque/pgfplots/tree/main/examples)
@@ -42,37 +42,10 @@ A more extensive list of examples and their source code is available in the
 
 ## Features
 
-- Inclusive: Allow users to process the LaTeX code that generates figures
+- Tectonic: Allow users to process the LaTeX code that generates figures
 without relying on any externally installed software, configuration, or
 resource files. This is achieved by including the
 [tectonic](https://crates.io/crates/tectonic) crate as a dependency.
-
-	If you already have a LaTeX distribution installed in your system, it is
-recommended to process the LaTeX code directly. The `tectonic` crate pulls in a
-lot of dependencies, which significantly increase compilation and processing
- times. Plotting a quadratic function is still very simple:
-
-	```rust
-	use pgfplots::axis::plot::Plot2D;
-	use std::process::{Command, Stdio};
-
-	let mut plot = Plot2D::new();
-	plot.coordinates = (-100..100)
-		.into_iter()
-		.map(|i| (f64::from(i), f64::from(i*i)).into())
-		.collect();
-
-	let argument = plot.standalone_string().replace('\n', "").replace('\t', "");
-	Command::new("pdflatex")
-		.stdout(Stdio::null())
-		.stderr(Stdio::null())
-		.arg("-interaction=batchmode")
-		.arg("-halt-on-error")
-		.arg("-jobname=figure")
-		.arg(argument)
-		.status()
-		.expect("Error: unable to run pdflatex");
-	```
 
 ## Want to contribute?
 
