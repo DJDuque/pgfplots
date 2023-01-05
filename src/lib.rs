@@ -2,7 +2,7 @@
 //! A Rust library to generate publication-quality figures.
 //!
 //! This crate is a PGFPlots code generator, and provides utilities to create,
-//! customize, and compile high-quality plots. The `inclusive` feature allows
+//! customize, and compile high-quality plots. The `tectonic` feature allows
 //! users to fully process figures without relying on any externally installed
 //! software.
 //!
@@ -24,7 +24,7 @@
 //!     .map(|i| (f64::from(i), f64::from(i*i)).into())
 //!     .collect();
 //!
-//! # #[cfg(feature = "inclusive")]
+//! # #[cfg(feature = "tectonic")]
 //! plot.show();
 //! ```
 //!
@@ -55,7 +55,7 @@ pub mod axis;
 pub enum Engine {
     /// `Pdflatex` engine (requires `pdflatex` to be installed).
     PdfLatex,
-    #[cfg(feature = "inclusive")]
+    #[cfg(feature = "tectonic")]
     /// `Tectonic` engine (does not require any external software).
     Tectonic,
 }
@@ -69,7 +69,7 @@ pub enum CompileError {
     /// Compilation was executed but returned a non-zero exit code.
     #[error("compilation failed with status {status}")]
     BadExitCode { status: ExitStatus },
-    #[cfg(feature = "inclusive")]
+    #[cfg(feature = "tectonic")]
     /// Tectonic error.
     #[error("tectonic error")]
     TectonicError(#[from] tectonic::errors::Error),
@@ -278,7 +278,7 @@ impl Picture {
                     return Err(CompileError::BadExitCode { status });
                 }
             }
-            #[cfg(feature = "inclusive")]
+            #[cfg(feature = "tectonic")]
             // Modified from `tectonic::latex_to_pdf` to generate the files
             // instead of just returning the bytes.
             Engine::Tectonic => {

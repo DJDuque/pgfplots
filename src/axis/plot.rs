@@ -73,7 +73,7 @@ impl fmt::Display for PlotKey {
 ///     .map(|i| (f64::from(i), f64::from(i*i)).into())
 ///     .collect();
 ///
-/// # #[cfg(feature = "inclusive")]
+/// # #[cfg(feature = "tectonic")]
 /// plot.show();
 /// ```
 #[derive(Clone, Debug, Default)]

@@ -65,7 +65,7 @@ impl fmt::Display for AxisKey {
 /// axis.set_x_label("$x$~[m]");
 /// axis.set_y_label("$y$~[m]");
 ///
-/// # #[cfg(feature = "inclusive")]
+/// # #[cfg(feature = "tectonic")]
 /// axis.show();
 /// ```
 #[derive(Clone, Debug, Default)]
