@@ -13,7 +13,7 @@ Add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-pgfplots = "0.4"
+pgfplots = "0.5"
 ```
 
 Plotting a quadratic function is as simple as:
@@ -46,16 +46,3 @@ A more extensive list of examples and their source code is available in the
 without relying on any externally installed software, configuration, or
 resource files. This is achieved by including the
 [tectonic](https://crates.io/crates/tectonic) crate as a dependency.
-
-## Want to contribute?
-
-There are multiple ways to contribute:
-- Install and test PGFPlots. If it doesn't work as expected please [open an
-  issue](https://github.com/DJDuque/pgfplots/issues/new).
-- Comment/propose a fix on some of the current [open 
-issues](https://github.com/DJDuque/pgfplots/issues).
-- Read through the [documentation](https://docs.rs/pgfplots). If there is 
-  something confusing, or you have a suggestion for something that could be 
-  improved, please let the maintainer(s) know.
-- Help evaluate [open pull requests](https://github.com/DJDuque/pgfplots/pulls),
-  by testing locally and reviewing what is proposed.

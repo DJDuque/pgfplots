@@ -1,6 +1,6 @@
 [package]
 name = "pgfplots"
-version = "0.4.1" # Remember to also change this in the README.md
+version = "0.5.0" # Remember to also change this in the README.md
 edition = "2021"
 license = "MIT"
 description = "A Rust library to generate publication-quality figures"
