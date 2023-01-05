@@ -9,6 +9,7 @@ repository = "https://github.com/DJDuque/pgfplots"
 keywords = ["pgfplots", "plotting", "plot", "visualization", "latex"]
 categories = ["visualization"]
 documentation = "https://docs.rs/pgfplots"
+exclude = ["examples/*.png"]
 
 [dependencies]
 opener = "0.5"
