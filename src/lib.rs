@@ -2,7 +2,7 @@
 //! A Rust library to generate publication-quality figures.
 //!
 //! This crate is a PGFPlots code generator, and provides utilities to create,
-//! customize, and compile high-quality plots. The `inclusive` feature allows
+//! customize, and compile high-quality plots. The `tectonic` feature allows
 //! users to fully process figures without relying on any externally installed
 //! software.
 //!
@@ -16,7 +16,9 @@
 //! [`Plot2D`]. Plotting a quadratic function is as simple as:
 //!
 //! ```no_run
-//! use pgfplots::axis::plot::Plot2D;
+//! # use pgfplots::ShowPdfError;
+//! # fn main() -> Result<(), ShowPdfError> {
+//! use pgfplots::{axis::plot::Plot2D, Engine, Picture};
 //!
 //! let mut plot = Plot2D::new();
 //! plot.coordinates = (-100..100)
@@ -24,8 +26,14 @@
 //!     .map(|i| (f64::from(i), f64::from(i*i)).into())
 //!     .collect();
 //!
-//! # #[cfg(feature = "inclusive")]
-//! plot.show();
+//! // The `Engine::PdfLatex` variant requires a working LaTeX installation with
+//! // the `pgfplots` package installed.
+//! // The `Engine::Tectonic` variant (enabled by the `tectonic` feature) allows
+//! // users to fully process figures without relying on any externally
+//! // installed software.
+//! Picture::from(plot).show_pdf(Engine::PdfLatex)?;
+//! # Ok(())
+//! # }
 //! ```
 //!
 //! It is possible to show multiple plots in the same axis environment by
@@ -35,67 +43,55 @@
 // Only imported for documentation. If you notice that this is no longer the
 // case, please change it.
 #[allow(unused_imports)]
-use crate::axis::{
-    plot::{Plot2D, PlotKey},
-    AxisKey,
-};
+use crate::axis::{plot::PlotKey, AxisKey};
 
-use crate::axis::Axis;
+use crate::axis::{plot::Plot2D, Axis};
+use rand::distributions::{Alphanumeric, DistString};
 use std::fmt;
-
-#[cfg(feature = "inclusive")]
 use std::io::Write;
+use std::path::Path;
+use std::process::{Command, ExitStatus, Stdio};
+use tempfile::NamedTempFile;
+use thiserror::Error;
 
 /// Axis environment inside a [`Picture`].
 pub mod axis;
 
-/// The error type returned when showing a figure fails.
-#[cfg(feature = "inclusive")]
+/// Engine to compile a [`Picture`] into a PDF.
 #[derive(Clone, Copy, Debug)]
+#[non_exhaustive]
+pub enum Engine {
+    /// `Pdflatex` engine (requires `pdflatex` to be installed).
+    PdfLatex,
+    #[cfg(feature = "tectonic")]
+    /// `Tectonic` engine (does not require any external software).
+    Tectonic,
+}
+
+/// The error type returned when a [`Picture`] fails to compile into a PDF.
+#[derive(Debug, Error)]
+pub enum CompileError {
+    /// I/O error.
+    #[error("io error")]
+    IoError(#[from] std::io::Error),
+    /// Compilation was executed but returned a non-zero exit code.
+    #[error("compilation failed with status {status}")]
+    BadExitCode { status: ExitStatus },
+    #[cfg(feature = "tectonic")]
+    /// Tectonic error.
+    #[error("tectonic error")]
+    TectonicError(#[from] tectonic::errors::Error),
+}
+
+/// The error type returned when showing a [`Picture`] fails.
+#[derive(Debug, Error)]
 pub enum ShowPdfError {
-    /// Compilation of LaTeX source failed internally
-    Compile,
-    /// Creating or writing to temporary file failed
-    Write,
-    /// Persisting the temporary file failed
-    Persist,
-    /// Opening the file failed
-    Open,
-}
-#[cfg(feature = "inclusive")]
-impl fmt::Display for ShowPdfError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            ShowPdfError::Compile => write!(f, "tectonic compilation error"),
-            ShowPdfError::Write => write!(f, "creating or writing to temporary file failed"),
-            ShowPdfError::Persist => write!(f, "persisting temporary file failed"),
-            ShowPdfError::Open => write!(f, "opening file error"),
-        }
-    }
-}
-#[cfg(feature = "inclusive")]
-impl From<tectonic::errors::Error> for ShowPdfError {
-    fn from(_: tectonic::errors::Error) -> Self {
-        Self::Compile
-    }
-}
-#[cfg(feature = "inclusive")]
-impl From<std::io::Error> for ShowPdfError {
-    fn from(_: std::io::Error) -> Self {
-        Self::Write
-    }
-}
-#[cfg(feature = "inclusive")]
-impl From<tempfile::PersistError> for ShowPdfError {
-    fn from(_: tempfile::PersistError) -> Self {
-        Self::Persist
-    }
-}
-#[cfg(feature = "inclusive")]
-impl From<opener::OpenError> for ShowPdfError {
-    fn from(_: opener::OpenError) -> Self {
-        Self::Open
-    }
+    /// Compilation error.
+    #[error("compilation error")]
+    BadCompilation(#[from] CompileError),
+    /// Opening the PDF failed.
+    #[error("opening the pdf failed")]
+    OpenerError(#[from] opener::OpenError),
 }
 
 /// Ti*k*Z options passed to the [`Picture`] environment.
@@ -129,9 +125,6 @@ impl fmt::Display for PictureKey {
 ///     % axis environments
 /// \end{tikzpicture}
 /// ```
-///
-/// You will rarely interact with a [`Picture`]. It is only useful to generate
-/// complex layouts with multiple axis environments.
 #[derive(Clone, Debug, Default)]
 pub struct Picture {
     keys: Vec<PictureKey>,
@@ -162,6 +155,19 @@ impl fmt::Display for Picture {
     }
 }
 
+impl From<Axis> for Picture {
+    fn from(axis: Axis) -> Self {
+        Self {
+            keys: Vec::new(),
+            axes: vec![axis],
+        }
+    }
+}
+impl From<Plot2D> for Picture {
+    fn from(plot: Plot2D) -> Self {
+        Picture::from(Axis::from(plot))
+    }
+}
 impl Picture {
     /// Create a new, empty picture environment.
     ///
@@ -170,7 +176,7 @@ impl Picture {
     /// ```
     /// use pgfplots::Picture;
     ///
-    /// let mut picture = Picture::new();
+    /// let picture = Picture::new();
     /// ```
     pub fn new() -> Self {
         Default::default()
@@ -209,7 +215,7 @@ impl Picture {
     /// ```
     /// use pgfplots::Picture;
     ///
-    /// let mut picture = Picture::new();
+    /// let picture = Picture::new();
     /// assert_eq!(
     /// r#"\documentclass{standalone}
     /// \usepackage{pgfplots}
@@ -226,28 +232,131 @@ impl Picture {
             + &self.to_string()
             + "\n\\end{document}"
     }
-    /// Show the picture as a standalone PDF. This will create a file in the
-    /// location returned by [`std::env::temp_dir()`] and open it with the
-    /// default PDF viewer in your system.
+    /// Compile the picture environment into a standalone PDF document. This
+    /// will create the file `jobname.pdf` in the specified `working_dir`
+    /// (additional files will be created in the same directory e.g. `.log` and
+    /// `.aux` files).
     ///
     /// # Examples
     ///
     /// ```no_run
-    /// use pgfplots::Picture;
+    /// # use pgfplots::CompileError;
+    /// # fn main() -> Result<(), CompileError> {
+    /// use pgfplots::{Engine, Picture};
     ///
-    /// let mut picture = Picture::new();
-    /// picture.show();
+    /// let picture = Picture::new();
+    /// picture.to_pdf("./", "jobname", Engine::PdfLatex)?;
+    ///
+    /// # Ok(())
+    /// # }
     /// ```
-    #[cfg(feature = "inclusive")]
-    pub fn show(&self) -> Result<(), ShowPdfError> {
-        let pdf_data = tectonic::latex_to_pdf(self.standalone_string())?;
+    pub fn to_pdf<P, S>(
+        &self,
+        working_dir: P,
+        jobname: S,
+        engine: Engine,
+    ) -> Result<(), CompileError>
+    where
+        P: AsRef<Path>,
+        // str instead of OsStr because of Tectonic's `tex_input_file`
+        S: AsRef<str>,
+    {
+        // Copy the tex code to a temporary file instead of passing it directly
+        // to the engine via e.g. stdin. This avoids the "Argument list too
+        // long" error when there are e.g. too many points in a plot.
+        let mut tex_file = NamedTempFile::new()?;
+        tex_file.write_all(self.standalone_string().as_bytes())?;
 
-        let mut file = tempfile::Builder::new().suffix(".pdf").tempfile()?;
-        file.write_all(&pdf_data)?;
-        let (_file, path) = file.keep()?;
+        match engine {
+            Engine::PdfLatex => {
+                let status = Command::new("pdflatex")
+                    .current_dir(working_dir)
+                    .stdout(Stdio::null())
+                    .stderr(Stdio::null())
+                    .arg("-interaction=batchmode")
+                    .arg("-halt-on-error")
+                    .arg(String::from("-jobname=") + jobname.as_ref())
+                    .arg(tex_file.path())
+                    .status()?;
 
-        opener::open(&path)?;
+                if !status.success() {
+                    return Err(CompileError::BadExitCode { status });
+                }
+            }
+            #[cfg(feature = "tectonic")]
+            // Modified from `tectonic::latex_to_pdf` to generate the files
+            // instead of just returning the bytes.
+            Engine::Tectonic => {
+                let mut status = tectonic::status::NoopStatusBackend::default();
 
+                let auto_create_config_file = false;
+                let config = tectonic::ctry!(tectonic::config::PersistentConfig::open(auto_create_config_file);
+                       "failed to open the default configuration file");
+
+                let only_cached = false;
+                let bundle = tectonic::ctry!(config.default_bundle(only_cached, &mut status);
+                       "failed to load the default resource bundle");
+
+                let format_cache_path = tectonic::ctry!(config.format_cache_path();
+                                  "failed to set up the format cache");
+
+                let mut sb = tectonic::driver::ProcessingSessionBuilder::default();
+                sb.bundle(bundle)
+                    .primary_input_path(tex_file.path())
+                    .tex_input_name(jobname.as_ref())
+                    .format_name("latex")
+                    .format_cache_path(format_cache_path)
+                    // Just to keep the behaviour consistent with `pdflatex`
+                    .keep_logs(true)
+                    .keep_intermediates(true)
+                    .print_stdout(false)
+                    .output_format(tectonic::driver::OutputFormat::Pdf)
+                    .output_dir(working_dir);
+
+                let mut sess = tectonic::ctry!(sb.create(&mut status); "failed to initialize the LaTeX processing session");
+                tectonic::ctry!(sess.run(&mut status); "the LaTeX engine failed");
+            }
+        }
+        Ok(())
+    }
+    /// Show the picture environment in a standalone PDF document. This will
+    /// create a file in the location returned by [`std::env::temp_dir`] and
+    /// open it with the default PDF viewer.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use pgfplots::ShowPdfError;
+    /// # fn main() -> Result<(), ShowPdfError> {
+    /// use pgfplots::{Engine, Picture};
+    ///
+    /// let picture = Picture::new();
+    /// picture.show_pdf(Engine::PdfLatex)?;
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn show_pdf(&self, engine: Engine) -> Result<(), ShowPdfError> {
+        // Return a random string that can be used as a `jobname` to compile a
+        // [`Picture`] in `std::env::temp_dir()`. This should not overwrite
+        // any existing files.
+        fn random_jobname() -> String {
+            loop {
+                let mut jobname = "pgfplots_".to_string();
+                Alphanumeric.append_string(&mut rand::thread_rng(), &mut jobname, 8);
+                let pdf_path = std::env::temp_dir().join(jobname.clone() + ".pdf");
+                let log_path = std::env::temp_dir().join(jobname.clone() + ".log");
+                let aux_path = std::env::temp_dir().join(jobname.clone() + ".aux");
+                if !pdf_path.exists() && !log_path.exists() && !aux_path.exists() {
+                    return jobname;
+                }
+            }
+        }
+
+        let jobname = random_jobname();
+        self.to_pdf(std::env::temp_dir(), &jobname, engine)?;
+        let pdf_path = std::env::temp_dir().join(jobname + ".pdf");
+        opener::open(pdf_path)?;
         Ok(())
     }
 }

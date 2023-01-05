@@ -1,6 +1,6 @@
-use pgfplots::axis::{
-    plot::{ErrorCharacter, ErrorDirection, Plot2D, PlotKey, Type2D},
-    Axis, AxisKey,
+use pgfplots::{
+    axis::{plot::*, *},
+    Engine, Picture,
 };
 use std::f64::consts::PI;
 
@@ -47,6 +47,8 @@ fn main() {
     axis.add_key(AxisKey::Custom(String::from("legend entries={fit,data}")));
     axis.add_key(AxisKey::Custom(String::from("legend pos=north west")));
 
-    #[cfg(feature = "inclusive")]
-    axis.show().unwrap();
+    #[cfg(feature = "tectonic")]
+    Picture::from(axis).show_pdf(Engine::Tectonic).unwrap();
+    #[cfg(not(feature = "tectonic"))]
+    Picture::from(axis).show_pdf(Engine::PdfLatex).unwrap();
 }

@@ -1,6 +1,6 @@
-use pgfplots::axis::{
-    plot::{Plot2D, PlotKey},
-    Axis, AxisKey,
+use pgfplots::{
+    axis::{plot::*, *},
+    Engine, Picture,
 };
 
 fn main() {
@@ -17,17 +17,20 @@ fn main() {
     };
     vertices.push(vertices[0]);
 
+    // Set snowflake
     let mut plot = Plot2D::new();
     plot.coordinates = vertices.into_iter().map(|v| v.into()).collect();
     plot.add_key(PlotKey::Custom(String::from("fill=gray!20")));
 
-    let mut axis = Axis::new();
+    // Customise axis environment
+    let mut axis = Axis::from(plot);
     axis.set_title("Kloch Snowflake");
-    axis.plots.push(plot);
     axis.add_key(AxisKey::Custom(String::from("hide axis")));
 
-    #[cfg(feature = "inclusive")]
-    axis.show().unwrap();
+    #[cfg(feature = "tectonic")]
+    Picture::from(axis).show_pdf(Engine::Tectonic).unwrap();
+    #[cfg(not(feature = "tectonic"))]
+    Picture::from(axis).show_pdf(Engine::PdfLatex).unwrap();
 }
 
 // Stolen from plotters crate example

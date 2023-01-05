@@ -1,6 +1,6 @@
-use pgfplots::axis::{
-    plot::{Plot2D, PlotKey, Type2D},
-    Axis, AxisKey,
+use pgfplots::{
+    axis::{plot::*, *},
+    Engine, Picture,
 };
 
 fn main() {
@@ -18,7 +18,8 @@ fn main() {
         .step_by(10)
         .map(|i| (f64::from(i), f64::from(i * i)).into())
         .collect();
-    // Currently have to "guess" the bar width. Still pending the \compat key
+    // Currently have to "guess" the bar width in pt units
+    // Still pending the \compat key
     rectangles.add_key(PlotKey::Type2D(Type2D::YBar {
         bar_width: 19.5,
         bar_shift: 0.0,
@@ -26,6 +27,7 @@ fn main() {
     rectangles.add_key(PlotKey::Custom(String::from("fill=gray!20")));
     rectangles.add_key(PlotKey::Custom(String::from("draw opacity=0.5")));
 
+    // Customise axis environment
     let mut axis = Axis::new();
     axis.set_title("Rectangle Integration");
     axis.set_x_label("$x$");
@@ -36,6 +38,8 @@ fn main() {
     axis.add_key(AxisKey::Custom(String::from("xlabel near ticks")));
     axis.add_key(AxisKey::Custom(String::from("ylabel near ticks")));
 
-    #[cfg(feature = "inclusive")]
-    axis.show().unwrap();
+    #[cfg(feature = "tectonic")]
+    Picture::from(axis).show_pdf(Engine::Tectonic).unwrap();
+    #[cfg(not(feature = "tectonic"))]
+    Picture::from(axis).show_pdf(Engine::PdfLatex).unwrap();
 }

@@ -1,6 +1,6 @@
 [package]
 name = "pgfplots"
-version = "0.4.1" # Remember to also change this in the README.md
+version = "0.5.0" # Remember to also change this in the README.md
 edition = "2021"
 license = "MIT"
 description = "A Rust library to generate publication-quality figures"
@@ -9,14 +9,14 @@ repository = "https://github.com/DJDuque/pgfplots"
 keywords = ["pgfplots", "plotting", "plot", "visualization", "latex"]
 categories = ["visualization"]
 documentation = "https://docs.rs/pgfplots"
+exclude = ["examples/*.png"]
 
 [dependencies]
+opener = "0.5"
+rand = "0.8"
 tectonic = { version = "0.12", optional = true }
-tempfile = { version = "3", optional = true }
-opener = { version = "0.5", optional = true }
-
-[features]
-inclusive = ["dep:tectonic", "dep:tempfile", "dep:opener"]
+tempfile = "3"
+thiserror = "1"
 
 [package.metadata.docs.rs]
 all-features = true

@@ -1,8 +1,10 @@
-use crate::{axis::plot::Plot2D, Picture};
+use crate::axis::plot::Plot2D;
 use std::fmt;
 
-#[cfg(feature = "inclusive")]
-use crate::ShowPdfError;
+// Only imported for documentation. If you notice that this is no longer the
+// case, please change it.
+#[allow(unused_imports)]
+use crate::Picture;
 
 /// Plot inside an [`Axis`] environment.
 pub mod plot;
@@ -56,15 +58,18 @@ impl fmt::Display for AxisKey {
 /// # Examples
 ///
 /// ```no_run
-/// use pgfplots::axis::Axis;
+/// # use pgfplots::ShowPdfError;
+/// # fn main() -> Result<(), ShowPdfError> {
+/// use pgfplots::{axis::Axis, Engine, Picture};
 ///
 /// let mut axis = Axis::new();
 /// axis.set_title("Picture of $\\gamma$ rays");
 /// axis.set_x_label("$x$~[m]");
 /// axis.set_y_label("$y$~[m]");
 ///
-/// # #[cfg(feature = "inclusive")]
-/// axis.show();
+/// Picture::from(axis).show_pdf(Engine::PdfLatex)?;
+/// # Ok(())
+/// # }
 /// ```
 #[derive(Clone, Debug, Default)]
 pub struct Axis {
@@ -96,6 +101,14 @@ impl fmt::Display for Axis {
     }
 }
 
+impl From<Plot2D> for Axis {
+    fn from(plot: Plot2D) -> Self {
+        Axis {
+            keys: Vec::new(),
+            plots: vec![plot],
+        }
+    }
+}
 impl Axis {
     /// Creates a new, empty axis environment.
     ///
@@ -104,7 +117,7 @@ impl Axis {
     /// ```
     /// use pgfplots::axis::Axis;
     ///
-    /// let mut axis = Axis::new();
+    /// let axis = Axis::new();
     /// ```
     pub fn new() -> Self {
         Default::default()
@@ -174,56 +187,6 @@ impl Axis {
             }
         }
         self.keys.push(key);
-    }
-    /// Return a [`String`] with valid LaTeX code that generates a standalone
-    /// PDF with the axis in a default picture environment.
-    ///
-    /// # Note
-    ///
-    /// Passing this string directly to e.g. `pdflatex` will fail to generate a
-    /// PDF document. It is usually necessary to [`str::replace`] all the
-    /// occurrences of `\n` and `\t` with white space before sending this string
-    /// as an argument to a LaTeX compiler.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use pgfplots::axis::Axis;
-    ///
-    /// let mut axis = Axis::new();
-    /// assert_eq!(
-    /// r#"\documentclass{standalone}
-    /// \usepackage{pgfplots}
-    /// \begin{document}
-    /// \begin{tikzpicture}
-    /// \begin{axis}
-    /// \end{axis}
-    /// \end{tikzpicture}
-    /// \end{document}"#,
-    /// axis.standalone_string());
-    /// ```
-    pub fn standalone_string(&self) -> String {
-        let mut picture = Picture::new();
-        picture.axes.push(self.clone());
-        picture.standalone_string()
-    }
-    /// Show the axis in a default [`Picture`] as a standalone PDF. This will
-    /// create a file in the location returned by [`std::env::temp_dir()`] and
-    /// open it with the default PDF viewer in your system.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use pgfplots::axis::Axis;
-    ///
-    /// let mut axis = Axis::new();
-    /// axis.show();
-    /// ```
-    #[cfg(feature = "inclusive")]
-    pub fn show(&self) -> Result<(), ShowPdfError> {
-        let mut picture = Picture::new();
-        picture.axes.push(self.clone());
-        picture.show()
     }
 }
 

@@ -1,13 +1,10 @@
-use crate::axis::{plot::coordinate::Coordinate2D, Axis};
+use crate::axis::plot::coordinate::Coordinate2D;
 use std::fmt;
-
-#[cfg(feature = "inclusive")]
-use crate::ShowPdfError;
 
 // Only imported for documentation. If you notice that this is no longer the
 // case, please change it.
 #[allow(unused_imports)]
-use crate::Picture;
+use crate::{Axis, Picture};
 
 /// Coordinates inside a plot.
 pub mod coordinate;
@@ -68,7 +65,9 @@ impl fmt::Display for PlotKey {
 /// # Examples
 ///
 /// ```no_run
-/// use pgfplots::axis::plot::Plot2D;
+/// # use pgfplots::ShowPdfError;
+/// # fn main() -> Result<(), ShowPdfError> {
+/// use pgfplots::{axis::plot::Plot2D, Engine, Picture};
 ///
 /// let mut plot = Plot2D::new();
 /// plot.coordinates = (-100..100)
@@ -76,8 +75,9 @@ impl fmt::Display for PlotKey {
 ///     .map(|i| (f64::from(i), f64::from(i*i)).into())
 ///     .collect();
 ///
-/// # #[cfg(feature = "inclusive")]
-/// plot.show();
+/// Picture::from(plot).show_pdf(Engine::PdfLatex)?;
+/// # Ok(())
+/// # }
 /// ```
 #[derive(Clone, Debug, Default)]
 pub struct Plot2D {
@@ -117,7 +117,7 @@ impl Plot2D {
     /// ```
     /// use pgfplots::axis::plot::Plot2D;
     ///
-    /// let mut plot = Plot2D::new();
+    /// let plot = Plot2D::new();
     /// ```
     pub fn new() -> Self {
         Default::default()
@@ -147,59 +147,6 @@ impl Plot2D {
             }
         }
         self.keys.push(key);
-    }
-    /// Return a [`String`] with valid LaTeX code that generates a standalone
-    /// PDF with the plot in a default axis and picture environment.
-    ///
-    /// # Note
-    ///
-    /// Passing this string directly to e.g. `pdflatex` will fail to generate a
-    /// PDF document. It is usually necessary to [`str::replace`] all the
-    /// occurrences of `\n` and `\t` with white space before sending this string
-    /// as an argument to a LaTeX compiler.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use pgfplots::axis::plot::Plot2D;
-    ///
-    /// let mut plot = Plot2D::new();
-    /// assert_eq!(
-    /// "\\documentclass{standalone}
-    /// \\usepackage{pgfplots}
-    /// \\begin{document}
-    /// \\begin{tikzpicture}
-    /// \\begin{axis}
-    /// \t\\addplot[] coordinates {
-    /// \t};
-    /// \\end{axis}
-    /// \\end{tikzpicture}
-    /// \\end{document}",
-    /// plot.standalone_string());
-    /// ```
-    pub fn standalone_string(&self) -> String {
-        let mut axis = Axis::new();
-        axis.plots.push(self.clone());
-        axis.standalone_string()
-    }
-    /// Show the plot in a default [`Axis`] and [`Picture`] as a standalone PDF.
-    /// This will create a file in the location returned by
-    /// [`std::env::temp_dir()`] and open it with the default PDF viewer in your
-    /// system.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use pgfplots::axis::plot::Plot2D;
-    ///
-    /// let mut plot = Plot2D::new();
-    /// plot.show();
-    /// ```
-    #[cfg(feature = "inclusive")]
-    pub fn show(&self) -> Result<(), ShowPdfError> {
-        let mut axis = Axis::new();
-        axis.plots.push(self.clone());
-        axis.show()
     }
 }
 
