@@ -65,7 +65,9 @@ impl fmt::Display for PlotKey {
 /// # Examples
 ///
 /// ```no_run
-/// use pgfplots::axis::plot::Plot2D;
+/// # use pgfplots::ShowPdfError;
+/// # fn main() -> Result<(), ShowPdfError> {
+/// use pgfplots::{axis::plot::Plot2D, Engine, Picture};
 ///
 /// let mut plot = Plot2D::new();
 /// plot.coordinates = (-100..100)
@@ -73,8 +75,9 @@ impl fmt::Display for PlotKey {
 ///     .map(|i| (f64::from(i), f64::from(i*i)).into())
 ///     .collect();
 ///
-/// # #[cfg(feature = "tectonic")]
-/// plot.show();
+/// Picture::from(plot).show_pdf(Engine::PdfLatex)?;
+/// # Ok(())
+/// # }
 /// ```
 #[derive(Clone, Debug, Default)]
 pub struct Plot2D {
@@ -114,7 +117,7 @@ impl Plot2D {
     /// ```
     /// use pgfplots::axis::plot::Plot2D;
     ///
-    /// let mut plot = Plot2D::new();
+    /// let plot = Plot2D::new();
     /// ```
     pub fn new() -> Self {
         Default::default()

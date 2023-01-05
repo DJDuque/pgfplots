@@ -16,7 +16,9 @@
 //! [`Plot2D`]. Plotting a quadratic function is as simple as:
 //!
 //! ```no_run
-//! use pgfplots::axis::plot::Plot2D;
+//! # use pgfplots::ShowPdfError;
+//! # fn main() -> Result<(), ShowPdfError> {
+//! use pgfplots::{axis::plot::Plot2D, Engine, Picture};
 //!
 //! let mut plot = Plot2D::new();
 //! plot.coordinates = (-100..100)
@@ -24,8 +26,14 @@
 //!     .map(|i| (f64::from(i), f64::from(i*i)).into())
 //!     .collect();
 //!
-//! # #[cfg(feature = "tectonic")]
-//! plot.show();
+//! // The `Engine::PdfLatex` variant requires a working LaTeX installation with
+//! // the `pgfplots` package installed.
+//! // The `Engine::Tectonic` variant (enabled by the `tectonic` feature) allows
+//! // users to fully process figures without relying on any externally
+//! // installed software.
+//! Picture::from(plot).show_pdf(Engine::PdfLatex)?;
+//! # Ok(())
+//! # }
 //! ```
 //!
 //! It is possible to show multiple plots in the same axis environment by
@@ -117,9 +125,6 @@ impl fmt::Display for PictureKey {
 ///     % axis environments
 /// \end{tikzpicture}
 /// ```
-///
-/// You will rarely interact with a [`Picture`]. It is only useful to generate
-/// complex layouts with multiple axis environments.
 #[derive(Clone, Debug, Default)]
 pub struct Picture {
     keys: Vec<PictureKey>,
@@ -171,7 +176,7 @@ impl Picture {
     /// ```
     /// use pgfplots::Picture;
     ///
-    /// let mut picture = Picture::new();
+    /// let picture = Picture::new();
     /// ```
     pub fn new() -> Self {
         Default::default()
@@ -210,7 +215,7 @@ impl Picture {
     /// ```
     /// use pgfplots::Picture;
     ///
-    /// let mut picture = Picture::new();
+    /// let picture = Picture::new();
     /// assert_eq!(
     /// r#"\documentclass{standalone}
     /// \usepackage{pgfplots}

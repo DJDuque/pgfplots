@@ -58,15 +58,18 @@ impl fmt::Display for AxisKey {
 /// # Examples
 ///
 /// ```no_run
-/// use pgfplots::axis::Axis;
+/// # use pgfplots::ShowPdfError;
+/// # fn main() -> Result<(), ShowPdfError> {
+/// use pgfplots::{axis::Axis, Engine, Picture};
 ///
 /// let mut axis = Axis::new();
 /// axis.set_title("Picture of $\\gamma$ rays");
 /// axis.set_x_label("$x$~[m]");
 /// axis.set_y_label("$y$~[m]");
 ///
-/// # #[cfg(feature = "tectonic")]
-/// axis.show();
+/// Picture::from(axis).show_pdf(Engine::PdfLatex)?;
+/// # Ok(())
+/// # }
 /// ```
 #[derive(Clone, Debug, Default)]
 pub struct Axis {
@@ -114,7 +117,7 @@ impl Axis {
     /// ```
     /// use pgfplots::axis::Axis;
     ///
-    /// let mut axis = Axis::new();
+    /// let axis = Axis::new();
     /// ```
     pub fn new() -> Self {
         Default::default()
