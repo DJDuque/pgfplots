@@ -98,6 +98,14 @@ impl fmt::Display for Axis {
     }
 }
 
+impl From<Plot2D> for Axis {
+    fn from(plot: Plot2D) -> Self {
+        Axis {
+            keys: Vec::new(),
+            plots: vec![plot],
+        }
+    }
+}
 impl Axis {
     /// Creates a new, empty axis environment.
     ///

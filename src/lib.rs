@@ -35,12 +35,9 @@
 // Only imported for documentation. If you notice that this is no longer the
 // case, please change it.
 #[allow(unused_imports)]
-use crate::axis::{
-    plot::{Plot2D, PlotKey},
-    AxisKey,
-};
+use crate::axis::{plot::PlotKey, AxisKey};
 
-use crate::axis::Axis;
+use crate::axis::{plot::Plot2D, Axis};
 use rand::distributions::{Alphanumeric, DistString};
 use std::fmt;
 use std::io::Write;
@@ -153,6 +150,19 @@ impl fmt::Display for Picture {
     }
 }
 
+impl From<Axis> for Picture {
+    fn from(axis: Axis) -> Self {
+        Self {
+            keys: Vec::new(),
+            axes: vec![axis],
+        }
+    }
+}
+impl From<Plot2D> for Picture {
+    fn from(plot: Plot2D) -> Self {
+        Picture::from(Axis::from(plot))
+    }
+}
 impl Picture {
     /// Create a new, empty picture environment.
     ///
