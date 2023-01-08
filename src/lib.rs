@@ -240,7 +240,9 @@ impl Picture {
     ///
     /// # Examples
     ///
-    /// ```
+    // Example is `no_run` because `std::env::temp_dir` causes the test to fail
+    // running GitHub Actions.
+    /// ```no_run
     /// # use pgfplots::CompileError;
     /// # fn main() -> Result<(), CompileError> {
     /// use pgfplots::{Engine, Picture};
