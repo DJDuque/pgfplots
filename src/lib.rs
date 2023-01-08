@@ -49,7 +49,7 @@ use crate::axis::{plot::Plot2D, Axis};
 use rand::distributions::{Alphanumeric, DistString};
 use std::fmt;
 use std::io::Write;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::{Command, ExitStatus, Stdio};
 use tempfile::NamedTempFile;
 use thiserror::Error;
@@ -235,17 +235,20 @@ impl Picture {
     /// Compile the picture environment into a standalone PDF document. This
     /// will create the file `jobname.pdf` in the specified `working_dir`
     /// (additional files will be created in the same directory e.g. `.log` and
-    /// `.aux` files).
+    /// `.aux` files). Return a [`Result`] with the path to the generated PDF
+    /// file or a [`CompileError`].
     ///
     /// # Examples
     ///
-    /// ```no_run
+    /// ```
     /// # use pgfplots::CompileError;
     /// # fn main() -> Result<(), CompileError> {
     /// use pgfplots::{Engine, Picture};
     ///
     /// let picture = Picture::new();
-    /// picture.to_pdf("./", "jobname", Engine::PdfLatex)?;
+    /// let pdf_path = picture.to_pdf(std::env::temp_dir(), "jobname", Engine::PdfLatex)?;
+    ///
+    /// assert_eq!(pdf_path, std::env::temp_dir().join("jobname.pdf"));
     ///
     /// # Ok(())
     /// # }
@@ -255,7 +258,7 @@ impl Picture {
         working_dir: P,
         jobname: S,
         engine: Engine,
-    ) -> Result<(), CompileError>
+    ) -> Result<PathBuf, CompileError>
     where
         P: AsRef<Path>,
         // str instead of OsStr because of Tectonic's `tex_input_file`
@@ -270,7 +273,7 @@ impl Picture {
         match engine {
             Engine::PdfLatex => {
                 let status = Command::new("pdflatex")
-                    .current_dir(working_dir)
+                    .current_dir(working_dir.as_ref())
                     .stdout(Stdio::null())
                     .stderr(Stdio::null())
                     .arg("-interaction=batchmode")
@@ -311,13 +314,15 @@ impl Picture {
                     .keep_intermediates(true)
                     .print_stdout(false)
                     .output_format(tectonic::driver::OutputFormat::Pdf)
-                    .output_dir(working_dir);
+                    .output_dir(working_dir.as_ref());
 
                 let mut sess = tectonic::ctry!(sb.create(&mut status); "failed to initialize the LaTeX processing session");
                 tectonic::ctry!(sess.run(&mut status); "the LaTeX engine failed");
             }
         }
-        Ok(())
+        Ok(working_dir
+            .as_ref()
+            .join(String::from(jobname.as_ref()) + ".pdf"))
     }
     /// Show the picture environment in a standalone PDF document. This will
     /// create a file in the location returned by [`std::env::temp_dir`] and
@@ -354,8 +359,7 @@ impl Picture {
         }
 
         let jobname = random_jobname();
-        self.to_pdf(std::env::temp_dir(), &jobname, engine)?;
-        let pdf_path = std::env::temp_dir().join(jobname + ".pdf");
+        let pdf_path = self.to_pdf(std::env::temp_dir(), &jobname, engine)?;
         opener::open(pdf_path)?;
         Ok(())
     }
