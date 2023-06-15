@@ -1,3 +1,5 @@
+use crate::axis::plot::color::PredefinedColor;
+
 use super::*;
 
 #[test]
@@ -132,6 +134,7 @@ fn plot_keys_tested() {
         PlotKey::XErrorDirection(_) => (),
         PlotKey::YError(_) => (),
         PlotKey::YErrorDirection(_) => (),
+        PlotKey::Marker(..) => (),
     }
 }
 
@@ -248,6 +251,188 @@ fn plot_key_y_error_direction_to_string() {
     assert_eq!(
         PlotKey::YErrorDirection(ErrorDirection::Both).to_string(),
         String::from("error bars/y dir=both")
+    );
+}
+
+#[test]
+fn plot_key_marker_to_string() {
+    assert_eq!(
+        PlotKey::Marker(Marker::new(MarkShape::O, vec![])).to_string(),
+        String::from("mark=o, mark options={}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(
+            MarkShape::OFilled,
+            vec![MarkOption::Fill(PredefinedColor::Blue.into())]
+        ))
+        .to_string(),
+        String::from("mark=*, mark options={fill=blue}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(MarkShape::X, vec![MarkOption::Scale(1.5)])).to_string(),
+        String::from("mark=x, mark options={scale=1.5}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(
+            MarkShape::Plus,
+            vec![MarkOption::Draw(PredefinedColor::Green.into())]
+        ))
+        .to_string(),
+        String::from("mark=+, mark options={draw=green}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(
+            MarkShape::Minus,
+            vec![
+                MarkOption::Fill(PredefinedColor::Blue.into()),
+                MarkOption::Scale(2.0)
+            ]
+        ))
+        .to_string(),
+        String::from("mark=-, mark options={fill=blue, scale=2}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(
+            MarkShape::Pipe,
+            vec![
+                MarkOption::Fill(PredefinedColor::Blue.into()),
+                MarkOption::Draw(PredefinedColor::Black.into())
+            ]
+        ))
+        .to_string(),
+        String::from("mark=|, mark options={fill=blue, draw=black}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(
+            MarkShape::Star,
+            vec![
+                MarkOption::Draw(PredefinedColor::Blue.into()),
+                MarkOption::Fill(PredefinedColor::Black.into())
+            ]
+        ))
+        .to_string(),
+        String::from("mark=star, mark options={draw=blue, fill=black}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(
+            MarkShape::OPlus,
+            vec![
+                MarkOption::Draw(PredefinedColor::Blue.into()),
+                MarkOption::Scale(1.5)
+            ]
+        ))
+        .to_string(),
+        String::from("mark=oplus, mark options={draw=blue, scale=1.5}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(
+            MarkShape::OPlusFilled,
+            vec![
+                MarkOption::Scale(1.5),
+                MarkOption::Draw(PredefinedColor::Blue.into())
+            ]
+        ))
+        .to_string(),
+        String::from("mark=oplus*, mark options={scale=1.5, draw=blue}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(
+            MarkShape::OTimes,
+            vec![
+                MarkOption::Scale(1.5),
+                MarkOption::Fill(PredefinedColor::Blue.into())
+            ]
+        ))
+        .to_string(),
+        String::from("mark=otimes, mark options={scale=1.5, fill=blue}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(
+            MarkShape::OTimesFilled,
+            vec![
+                MarkOption::Draw(PredefinedColor::Blue.into()),
+                MarkOption::Fill(PredefinedColor::Yellow.into()),
+                MarkOption::Scale(1.5)
+            ]
+        ))
+        .to_string(),
+        String::from("mark=otimes*, mark options={draw=blue, fill=yellow, scale=1.5}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(
+            MarkShape::Square,
+            vec![
+                MarkOption::Draw(PredefinedColor::Blue.into()),
+                MarkOption::Scale(1.5),
+                MarkOption::Fill(PredefinedColor::Yellow.into())
+            ]
+        ))
+        .to_string(),
+        String::from("mark=square, mark options={draw=blue, scale=1.5, fill=yellow}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(
+            MarkShape::SquareFilled,
+            vec![
+                MarkOption::Scale(1.5),
+                MarkOption::Draw(PredefinedColor::Blue.into()),
+                MarkOption::Fill(PredefinedColor::Yellow.into())
+            ]
+        ))
+        .to_string(),
+        String::from("mark=square*, mark options={scale=1.5, draw=blue, fill=yellow}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(
+            MarkShape::Triangle,
+            vec![
+                MarkOption::Scale(1.5),
+                MarkOption::Fill(PredefinedColor::Yellow.into()),
+                MarkOption::Draw(PredefinedColor::Blue.into())
+            ]
+        ))
+        .to_string(),
+        String::from("mark=triangle, mark options={scale=1.5, fill=yellow, draw=blue}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(
+            MarkShape::TriangleFilled,
+            vec![
+                MarkOption::Fill(PredefinedColor::Yellow.into()),
+                MarkOption::Scale(1.5),
+                MarkOption::Draw(PredefinedColor::Blue.into())
+            ]
+        ))
+        .to_string(),
+        String::from("mark=triangle*, mark options={fill=yellow, scale=1.5, draw=blue}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(
+            MarkShape::Diamond,
+            vec![
+                MarkOption::Fill(PredefinedColor::Yellow.into()),
+                MarkOption::Draw(PredefinedColor::Blue.into()),
+                MarkOption::Scale(1.5)
+            ]
+        ))
+        .to_string(),
+        String::from("mark=diamond, mark options={fill=yellow, draw=blue, scale=1.5}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(MarkShape::DiamondFilled, vec![])).to_string(),
+        String::from("mark=diamond*, mark options={}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(MarkShape::Pentagon, vec![])).to_string(),
+        String::from("mark=pentagon, mark options={}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(MarkShape::PentagonFilled, vec![])).to_string(),
+        String::from("mark=pentagon*, mark options={}")
+    );
+    assert_eq!(
+        PlotKey::Marker(Marker::new(MarkShape::Text(String::from("p")), vec![])).to_string(),
+        String::from("mark=text, text mark=p, mark options={}")
     );
 }
 
