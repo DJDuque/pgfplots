@@ -361,7 +361,7 @@ impl Picture {
         }
 
         let jobname = random_jobname();
-        let pdf_path = self.to_pdf(std::env::temp_dir(), &jobname, engine)?;
+        let pdf_path = self.to_pdf(std::env::temp_dir(), jobname, engine)?;
         opener::open(pdf_path)?;
         Ok(())
     }

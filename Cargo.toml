@@ -14,6 +14,7 @@ exclude = ["examples/*.png"]
 [dependencies]
 opener = "0.5"
 rand = "0.8"
+strum = { version = "0.24.1", features = ["derive"] }
 tectonic = { version = "0.12", optional = true }
 tempfile = "3"
 thiserror = "1"

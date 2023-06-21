@@ -1,3 +1,6 @@
+use strum::Display;
+
+pub use crate::axis::plot::color::Color;
 use crate::axis::plot::coordinate::Coordinate2D;
 use std::fmt;
 
@@ -6,6 +9,8 @@ use std::fmt;
 #[allow(unused_imports)]
 use crate::{Axis, Picture};
 
+/// Universal color utility.
+pub mod color;
 /// Coordinates inside a plot.
 pub mod coordinate;
 
@@ -38,6 +43,8 @@ pub enum PlotKey {
     /// Note that error bars won't be drawn unless [`PlotKey::YError`] is also
     /// set.
     YErrorDirection(ErrorDirection),
+    /// Control the shape, color and size of markers.
+    Marker(Marker),
 }
 
 impl fmt::Display for PlotKey {
@@ -49,6 +56,7 @@ impl fmt::Display for PlotKey {
             PlotKey::XErrorDirection(value) => write!(f, "error bars/x dir={value}"),
             PlotKey::YError(value) => write!(f, "error bars/y {value}"),
             PlotKey::YErrorDirection(value) => write!(f, "error bars/y dir={value}"),
+            PlotKey::Marker(marker) => write!(f, "{marker}"),
         }
     }
 }
@@ -275,6 +283,127 @@ impl fmt::Display for ErrorDirection {
             ErrorDirection::Plus => write!(f, "plus"),
             ErrorDirection::Minus => write!(f, "minus"),
             ErrorDirection::Both => write!(f, "both"),
+        }
+    }
+}
+
+/// Control shape, size and color of markers.
+#[derive(Clone, Debug)]
+pub struct Marker {
+    shape: MarkShape,
+    options: Vec<MarkOption>,
+}
+
+impl Marker {
+    pub fn new(shape: MarkShape, options: Vec<MarkOption>) -> Self {
+        Self { shape, options }
+    }
+}
+
+impl fmt::Display for Marker {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // The text marker needs an additional flag:
+        let mark = if let MarkShape::Text(text) = &self.shape {
+            format!("mark=text, text mark={text}")
+        } else {
+            format!("mark={}", self.shape)
+        };
+        write!(
+            f,
+            "{mark}, mark options={{{}}}",
+            self.options
+                .iter()
+                .map(|option| option.to_string())
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    }
+}
+
+/// Control the shape of markers.
+#[derive(Clone, Debug, Display)]
+#[strum(serialize_all = "lowercase")]
+pub enum MarkShape {
+    /// Set the marker to ⃝.
+    O,
+    /// Set the marker to ⏺.
+    #[strum(serialize = "*")]
+    OFilled,
+    /// Set the marker to ✕.
+    X,
+    /// Set the marker to +.
+    #[strum(serialize = "+")]
+    Plus,
+    /// Set the marker to −.
+    #[strum(serialize = "-")]
+    Minus,
+    /// Set the marker to |.
+    #[strum(serialize = "|")]
+    Pipe,
+    /// Set the marker to *.
+    Star,
+    /// Set the marker to ＊.
+    Asterisk,
+    /// Set the marker to ⊕.
+    OPlus,
+    /// Set the marker to ⊕. Same as `[Marker::OPlus]` but filled with a color.
+    #[strum(serialize = "oplus*")]
+    OPlusFilled,
+    /// Set the marker to ⊗.
+    OTimes,
+    /// Set the marker to ⊗. Same as `[Marker::OTimes]` but filled with a color.
+    #[strum(serialize = "otimes*")]
+    OTimesFilled,
+    /// Set the marker to □.
+    Square,
+    /// Set the marker to □. Same as `[Marker::Square]` but filled with a color.
+    #[strum(serialize = "square*")]
+    SquareFilled,
+    /// Set the marker to △.
+    Triangle,
+    /// Set the marker to △. Same as `[Marker::Triangle]` but filled with a color.
+    #[strum(serialize = "triangle*")]
+    TriangleFilled,
+    /// Set the marker to ♢.
+    Diamond,
+    /// Set the marker to ♢. Same as `[Marker::Diamond]` but filled with a color.
+    #[strum(serialize = "diamond*")]
+    DiamondFilled,
+    /// Set the marker to ⬠.
+    Pentagon,
+    /// Set the marker to ⬠. Same as `[Marker::Pentagon]` but filled with a color.
+    #[strum(serialize = "pentagon*")]
+    PentagonFilled,
+    /// Set the marker to specified text.
+    #[strum(disabled)]
+    Text(String),
+}
+
+/// Control the color and scaling of markers.
+#[non_exhaustive]
+#[derive(Clone, Debug)]
+pub enum MarkOption {
+    /// Scale the size of the marker.
+    Scale(f32),
+    /// Color the body of the marker. Only filled shapes (e.g. `[MarkShape::OFilled]`)
+    /// support filling the body.
+    Fill(Color),
+    /// Color the edge of the marker.
+    Draw(Color),
+    /// Scale the size of the marker on the x-axis only.
+    XScale(f64),
+    /// Scale the size of the marker on the y-axis only.
+    YScale(f64),
+}
+
+impl fmt::Display for MarkOption {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            MarkOption::Scale(number) => write!(f, "scale={number}"),
+            MarkOption::Fill(color) => write!(f, "fill={{{color}}}"),
+            MarkOption::Draw(color) => write!(f, "draw={{{color}}}"),
+            MarkOption::XScale(number) => write!(f, "xscale={number}"),
+            MarkOption::YScale(number) => write!(f, "yscale={number}"),
         }
     }
 }
